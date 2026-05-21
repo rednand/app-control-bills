@@ -135,29 +135,34 @@ export default function SalarySection({
           </tbody>
         </table>
 
-        <div className="mx-3 mb-3 mt-2 rounded-xl overflow-hidden">
+        <div className="mt-2 mb-3">
           <table className="w-full text-sm border-collapse">
             <tbody>
-              {summaryRows.map((row, idx) => (
-                <tr key={idx} className={`bg-slate-800 ${idx < summaryRows.length - 1 ? 'border-b border-slate-700' : ''}`}>
-                  <td className="sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 min-w-[200px]">
-                    {row.label}
-                  </td>
-                  {calculations.map((calc) => {
-                    const raw = row.getValue(calc);
-                    const colorClass = raw !== null && row.colorFn ? row.colorFn(raw) : 'text-slate-300';
-                    return (
-                      <td key={calc.month} className={`px-2 py-3 text-right min-w-[90px] ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
-                        {raw === null || raw === 0
-                          ? <span className="text-slate-600">—</span>
-                          : row.isPercent
-                          ? formatPercent(raw)
-                          : formatCurrency(raw)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+              {summaryRows.map((row, rowIdx) => {
+                const isFirst = rowIdx === 0;
+                const isLast = rowIdx === summaryRows.length - 1;
+                return (
+                  <tr key={rowIdx} className={`bg-slate-800 ${!isLast ? 'border-b border-slate-700' : ''}`}>
+                    <td className={`sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 min-w-[200px] ${isFirst ? 'rounded-tl-xl' : ''} ${isLast ? 'rounded-bl-xl' : ''}`}>
+                      {row.label}
+                    </td>
+                    {calculations.map((calc, ci) => {
+                      const raw = row.getValue(calc);
+                      const colorClass = raw !== null && row.colorFn ? row.colorFn(raw) : 'text-slate-300';
+                      const isLastCol = ci === calculations.length - 1;
+                      return (
+                        <td key={calc.month} className={`px-2 py-3 text-right min-w-[90px] ${colorClass} ${row.isBold ? 'font-semibold' : ''} ${isFirst && isLastCol ? 'rounded-tr-xl' : ''} ${isLast && isLastCol ? 'rounded-br-xl' : ''}`}>
+                          {raw === null || raw === 0
+                            ? <span className="text-slate-600">—</span>
+                            : row.isPercent
+                            ? formatPercent(raw)
+                            : formatCurrency(raw)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
