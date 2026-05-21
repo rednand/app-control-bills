@@ -43,10 +43,11 @@
 | Principle | Gate Question | Status |
 |-----------|---------------|--------|
 | I. Calculation Integrity | Are all derived values computed via `useMemo` from source arrays only? | [ ] |
-| II. Optimistic UI | Does every write update local state immediately before Supabase persists? | [ ] |
+| II. Optimistic UI | Does every write update local state immediately before MongoDB persists? | [ ] |
 | III. Single-User Simplicity | Does this feature avoid multi-tenancy, auth flows, or routing? | [ ] |
-| IV. Data Integrity | Does every new table/upsert define a unique constraint? | [ ] |
+| IV. Data Integrity | Does every new collection/upsert define a unique Mongoose index? | [ ] |
 | V. No Dead Code | Are there no unused components, types, or duplicate patterns introduced? | [ ] |
+| VI. Responsividade | Do all new or refactored components work on mobile (≥375px) and desktop? | [ ] |
 
 ## Project Structure
 

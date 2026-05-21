@@ -36,10 +36,10 @@ export default function DeductionsTable({
     monthlyDeductions.find((d) => d.deduction_id === deductionId && d.month === month);
 
   const getInstitutionName = (institutionId: string | null) => {
-    if (!institutionId) return '—';
+    if (!institutionId) return null;
     return institutions.find((i) => i.id === institutionId)?.abbreviation?.trim() ||
       institutions.find((i) => i.id === institutionId)?.name ||
-      '—';
+      null;
   };
 
   const handleAdd = () => {
@@ -49,17 +49,20 @@ export default function DeductionsTable({
     setShowForm(false);
   };
 
+  const openPicker = (dedId: string, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPickerAnchor(rect);
+    setActivePicker(activePicker === dedId ? null : dedId);
+  };
+
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-slate-600 text-white">
-              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[180px]">
+              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[260px]">
                 SUBTRAÇÕES
-              </th>
-              <th className="px-3 py-3 text-left font-medium min-w-[110px] text-slate-200 text-xs">
-                FATURA
               </th>
               {MONTHS_SHORT.map((m) => (
                 <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px]">
@@ -75,27 +78,27 @@ export default function DeductionsTable({
                 key={ded.id}
                 className={`border-b border-slate-100 group hover:bg-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700 flex items-center justify-between gap-2">
-                  <span>{ded.description}</span>
+                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700">
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{ded.description}</span>
+                    <button
+                      onClick={() => onDeleteDeduction(ded.id)}
+                      className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs transition-opacity flex-shrink-0"
+                      title="Remover"
+                    >
+                      ✕
+                    </button>
+                  </div>
                   <button
-                    onClick={() => onDeleteDeduction(ded.id)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs transition-opacity"
-                    title="Remover"
-                  >
-                    ✕
-                  </button>
-                </td>
-                <td className="px-3 py-2 relative">
-                  <button
-                    onClick={(e) => {
-                      const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
-                      setPickerAnchor(rect);
-                      setActivePicker(activePicker === ded.id ? null : ded.id);
-                    }}
-                    className="text-xs text-slate-500 hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors whitespace-nowrap"
+                    onClick={(e) => openPicker(ded.id, e)}
+                    className={
+                      ded.institution_id
+                        ? 'text-[10px] text-slate-400 hover:text-slate-600 text-left transition-colors'
+                        : 'text-[10px] text-slate-300 hover:text-slate-500 text-left transition-colors'
+                    }
                     title="Clique para vincular a uma fatura"
                   >
-                    {getInstitutionName(ded.institution_id)}
+                    {getInstitutionName(ded.institution_id) ?? '+ vincular fatura'}
                   </button>
                   {activePicker === ded.id && pickerAnchor && (
                     <InstitutionPicker
@@ -149,7 +152,7 @@ export default function DeductionsTable({
                     </button>
                   </div>
                 </td>
-                <td colSpan={14} />
+                <td colSpan={13} />
               </tr>
             )}
 
@@ -167,7 +170,6 @@ export default function DeductionsTable({
                   )}
                 </div>
               </td>
-              <td />
               {totals.map((val, mi) => (
                 <td key={mi} className="px-2 py-2 text-right text-slate-700">
                   {formatCurrency(val)}

@@ -1,21 +1,19 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.0.1
+Version change: 1.0.1 → 1.1.0
 
 Modified principles:
-- II. Optimistic UI: "Supabase upsert" → "MongoDB write"; "Supabase error" → "API/MongoDB error"
-- III. Single-User Simplicity: Removed RLS reference (Supabase concept); replaced with next-auth session note
-- IV. Data Integrity: "write to Supabase" → "write to MongoDB"; "tables" → "collections";
-  collection names updated to actual Mongoose model names; unique constraint updated to
-  include `owner` in salary_config (per feature 003)
+- None renamed or redefined.
 
-Added sections: N/A
+Added sections:
+- VI. Responsividade: every new or refactored component MUST support mobile and
+  desktop viewports using Tailwind responsive prefixes and overflow-scroll containers.
 
 Removed sections: N/A
 
 Templates requiring updates:
-- .specify/templates/plan-template.md ✅ (Constitution Check gates already aligned)
+- .specify/templates/plan-template.md ✅ (added gate VI; fixed stale "Supabase" → "MongoDB" in gate II)
 - .specify/templates/spec-template.md ✅ (no structural changes required)
 - .specify/templates/tasks-template.md ✅ (no structural changes required)
 
@@ -80,6 +78,21 @@ The codebase MUST stay lean and purposeful.
 - Comments in source code are prohibited unless documenting a non-obvious
   constraint or external workaround
 
+### VI. Responsividade
+
+Every new component created or existing component refactored MUST work correctly
+on both mobile and desktop viewports. Responsiveness MUST be addressed in the
+same PR as the feature — it is not a follow-up task.
+
+- All layout variations between viewport sizes MUST use Tailwind responsive
+  prefixes (`sm:`, `md:`, `lg:`) — no hardcoded pixel widths in class attributes
+- Data tables with many columns MUST be wrapped in `overflow-x-auto` containers
+  so they scroll horizontally on small screens rather than breaking the layout
+- No new UI element MUST cause horizontal overflow or unreadable content at
+  viewport widths below 375px
+- When refactoring an existing component, any responsiveness issues found
+  MUST be corrected in the same PR
+
 ## Technology Stack
 
 **Runtime**: Next.js 15 App Router, React 19, TypeScript (strict mode)
@@ -128,4 +141,4 @@ All PRs MUST be verified against the Constitution Check section in
 `plan-template.md` before approval. Complexity violations MUST be justified
 in the Complexity Tracking table of the relevant `plan.md`.
 
-**Version**: 1.0.1 | **Ratified**: 2026-05-20 | **Last Amended**: 2026-05-20
+**Version**: 1.1.0 | **Ratified**: 2026-05-20 | **Last Amended**: 2026-05-21
