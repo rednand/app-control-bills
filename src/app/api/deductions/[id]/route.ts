@@ -24,12 +24,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!owner) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const { salary_period } = await req.json();
+  const body = await req.json();
 
   await connectToDatabase();
+
+  const updateFields: Record<string, unknown> = {};
+  if ('institution_id' in body) updateFields.institution_id = body.institution_id ?? null;
+  if ('abbreviation' in body) updateFields.abbreviation = body.abbreviation ?? null;
+
   const doc = await Deduction.findOneAndUpdate(
     { _id: id, owner },
-    { $set: { salary_period: salary_period ?? null } },
+    { $set: updateFields },
     { new: true, runValidators: true }
   ).lean<Record<string, unknown>>();
 

@@ -74,5 +74,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-specs/004-salary-deduction-add/plan.md
+specs/005-deduction-invoice-link/plan.md
 <!-- SPECKIT END -->

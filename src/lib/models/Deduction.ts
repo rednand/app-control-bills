@@ -4,7 +4,7 @@ export interface IDeduction extends Document {
   description: string;
   position: number;
   owner: string;
-  salary_period: 1 | 2 | null;
+  institution_id: string | null;
 }
 
 const schema = new Schema<IDeduction>(
@@ -12,7 +12,7 @@ const schema = new Schema<IDeduction>(
     description: { type: String, required: true },
     position: { type: Number, default: 0 },
     owner: { type: String, required: true, index: true },
-    salary_period: { type: Number, enum: [1, 2, null], default: null },
+    institution_id: { type: String, default: null },
   },
   { timestamps: true }
 );

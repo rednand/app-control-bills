@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const [institutions, invoices, deductions, monthlyDeductions, salaryConfigs] = await Promise.all([
     Institution.find({ owner }).sort('position').lean<(WithId & { name: string; due_day: number; payment_installment: number | null; position: number; abbreviation: string | null })[]>(),
     Invoice.find({ year, owner }).lean<(WithId & { institution_id: unknown; month: number; year: number; amount: number })[]>(),
-    Deduction.find({ owner }).sort('position').lean<(WithId & { description: string; position: number; salary_period: number | null })[]>(),
+    Deduction.find({ owner }).sort('position').lean<(WithId & { description: string; position: number; institution_id: string | null })[]>(),
     MonthlyDeduction.find({ year, owner }).lean<(WithId & { deduction_id: unknown; month: number; year: number; amount: number; note: string | null })[]>(),
     SalaryConfig.find({ year, owner }).lean<(WithId & { month: number; year: number; installment_1: number; installment_2: number })[]>(),
   ]);

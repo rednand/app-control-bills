@@ -34,19 +34,6 @@ export function balanceColor(value: number): string {
   return 'text-slate-500';
 }
 
-export function getSomaLabel(
-  period: 1 | 2,
-  deductions: { salary_period: number | null; description: string }[]
-): string {
-  const names = deductions
-    .filter((d) => d.salary_period === period)
-    .map((d) => d.description);
-
-  if (names.length === 0) return 'Soma —';
-  if (names.length === 1) return `Soma ${names[0]}`;
-  return `Soma ${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`;
-}
-
 export function getSubtraiLabel(
   installment: 1 | 2,
   institutions: { payment_installment: number | null; name: string; abbreviation: string | null }[]

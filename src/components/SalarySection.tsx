@@ -1,30 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { Deduction, Institution, MonthCalc, PaymentInstallment, SalaryConfig } from '@/lib/types';
-import { MONTHS_SHORT, formatCurrency, formatPercent, percentColor, balanceColor, getSubtraiLabel, getSomaLabel } from '@/lib/utils';
+import { Institution, MonthCalc, PaymentInstallment, SalaryConfig } from '@/lib/types';
+import { MONTHS_SHORT, formatCurrency, formatPercent, percentColor, balanceColor, getSubtraiLabel } from '@/lib/utils';
 import EditableCell from './EditableCell';
 import InstallmentSelector from './InstallmentSelector';
-import DeductionSelector from './DeductionSelector';
 
 interface Props {
   institutions: Institution[];
   calculations: MonthCalc[];
   salaryConfigs: SalaryConfig[];
-  deductions: Deduction[];
   onSalaryChange: (month: number, field: 'installment_1' | 'installment_2', value: number) => void;
   onInstallmentAssign: (institutionId: string, installment: PaymentInstallment | null) => void;
-  onSalaryPeriodAssign: (deductionId: string, period: 1 | 2 | null) => void;
 }
 
 export default function SalarySection({
-  institutions, calculations, salaryConfigs, deductions,
-  onSalaryChange, onInstallmentAssign, onSalaryPeriodAssign,
+  institutions, calculations, salaryConfigs,
+  onSalaryChange, onInstallmentAssign,
 }: Props) {
   const [activeSelector, setActiveSelector] = useState<1 | 2 | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const [activeSomaSelector, setActiveSomaSelector] = useState<1 | 2 | null>(null);
-  const [somaAnchorRect, setSomaAnchorRect] = useState<DOMRect | null>(null);
 
   const getSalary = (month: number, field: 'installment_1' | 'installment_2') =>
     salaryConfigs.find((s) => s.month === month)?.[field] ?? 0;
@@ -38,7 +33,6 @@ export default function SalarySection({
     colorFn?: (val: number) => string;
     isPercent?: boolean;
     installmentSlot?: 1 | 2;
-    somaSlot?: 1 | 2;
   }> = [
     {
       label: 'Salário Parcela 1 (dia 15)',
@@ -51,12 +45,6 @@ export default function SalarySection({
       getValue: (c) => c.inst1Total,
       colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800',
       installmentSlot: 1,
-    },
-    {
-      label: () => getSomaLabel(1, deductions),
-      getValue: (c) => c.ded1Total,
-      colorFn: (v) => v > 0 ? 'text-emerald-600' : 'text-slate-800',
-      somaSlot: 1,
     },
     {
       label: 'Saldo Período 15',
@@ -75,12 +63,6 @@ export default function SalarySection({
       getValue: (c) => c.inst2Total,
       colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800',
       installmentSlot: 2,
-    },
-    {
-      label: () => getSomaLabel(2, deductions),
-      getValue: (c) => c.ded2Total,
-      colorFn: (v) => v > 0 ? 'text-emerald-600' : 'text-slate-800',
-      somaSlot: 2,
     },
     {
       label: 'Saldo Período 30',
@@ -170,29 +152,6 @@ export default function SalarySection({
                             onAssign={onInstallmentAssign}
                             onClose={() => setActiveSelector(null)}
                             anchorRect={anchorRect}
-                          />
-                        )}
-                      </>
-                    ) : row.somaSlot ? (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
-                            setSomaAnchorRect(rect);
-                            setActiveSomaSelector(activeSomaSelector === row.somaSlot ? null : row.somaSlot!);
-                          }}
-                          className="text-left hover:text-slate-900 hover:underline decoration-dashed underline-offset-2 transition-colors"
-                          title="Clique para configurar subtrações que somam nesta parcela"
-                        >
-                          {label}
-                        </button>
-                        {activeSomaSelector === row.somaSlot && somaAnchorRect && (
-                          <DeductionSelector
-                            period={row.somaSlot}
-                            deductions={deductions}
-                            onAssign={onSalaryPeriodAssign}
-                            onClose={() => setActiveSomaSelector(null)}
-                            anchorRect={somaAnchorRect}
                           />
                         )}
                       </>

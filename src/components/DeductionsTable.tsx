@@ -1,32 +1,46 @@
 'use client';
 
 import { useState } from 'react';
-import { Deduction, MonthlyDeduction } from '@/lib/types';
+import { Deduction, Institution, MonthlyDeduction } from '@/lib/types';
 import { MONTHS_SHORT, formatCurrency } from '@/lib/utils';
 import EditableCell from './EditableCell';
+import InstitutionPicker from './InstitutionPicker';
 
 interface Props {
   deductions: Deduction[];
   monthlyDeductions: MonthlyDeduction[];
+  institutions: Institution[];
   totals: number[];
   onDeductionChange: (deductionId: string, month: number, value: number, note?: string) => void;
   onAddDeduction: (description: string) => void;
   onDeleteDeduction: (id: string) => void;
+  onDeductionInstitutionAssign: (deductionId: string, institutionId: string | null) => void;
 }
 
 export default function DeductionsTable({
   deductions,
   monthlyDeductions,
+  institutions,
   totals,
   onDeductionChange,
   onAddDeduction,
   onDeleteDeduction,
+  onDeductionInstitutionAssign,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [newDesc, setNewDesc] = useState('');
+  const [activePicker, setActivePicker] = useState<string | null>(null);
+  const [pickerAnchor, setPickerAnchor] = useState<DOMRect | null>(null);
 
   const getEntry = (deductionId: string, month: number) =>
     monthlyDeductions.find((d) => d.deduction_id === deductionId && d.month === month);
+
+  const getInstitutionName = (institutionId: string | null) => {
+    if (!institutionId) return '—';
+    return institutions.find((i) => i.id === institutionId)?.abbreviation?.trim() ||
+      institutions.find((i) => i.id === institutionId)?.name ||
+      '—';
+  };
 
   const handleAdd = () => {
     if (!newDesc.trim()) return;
@@ -43,6 +57,9 @@ export default function DeductionsTable({
             <tr className="bg-slate-600 text-white">
               <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[180px]">
                 SUBTRAÇÕES
+              </th>
+              <th className="px-3 py-3 text-left font-medium min-w-[110px] text-slate-200 text-xs">
+                FATURA
               </th>
               {MONTHS_SHORT.map((m) => (
                 <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px]">
@@ -67,6 +84,28 @@ export default function DeductionsTable({
                   >
                     ✕
                   </button>
+                </td>
+                <td className="px-3 py-2 relative">
+                  <button
+                    onClick={(e) => {
+                      const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                      setPickerAnchor(rect);
+                      setActivePicker(activePicker === ded.id ? null : ded.id);
+                    }}
+                    className="text-xs text-slate-500 hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors whitespace-nowrap"
+                    title="Clique para vincular a uma fatura"
+                  >
+                    {getInstitutionName(ded.institution_id)}
+                  </button>
+                  {activePicker === ded.id && pickerAnchor && (
+                    <InstitutionPicker
+                      institutions={institutions}
+                      currentId={ded.institution_id}
+                      onSelect={(id) => onDeductionInstitutionAssign(ded.id, id)}
+                      onClose={() => setActivePicker(null)}
+                      anchorRect={pickerAnchor}
+                    />
+                  )}
                 </td>
                 {MONTHS_SHORT.map((_, mi) => {
                   const entry = getEntry(ded.id, mi + 1);
@@ -110,7 +149,7 @@ export default function DeductionsTable({
                     </button>
                   </div>
                 </td>
-                <td colSpan={13} />
+                <td colSpan={14} />
               </tr>
             )}
 
@@ -128,6 +167,7 @@ export default function DeductionsTable({
                   )}
                 </div>
               </td>
+              <td />
               {totals.map((val, mi) => (
                 <td key={mi} className="px-2 py-2 text-right text-slate-700">
                   {formatCurrency(val)}

@@ -21,7 +21,7 @@ export interface Deduction {
   id: string;
   description: string;
   position: number;
-  salary_period: 1 | 2 | null;
+  institution_id: string | null;
 }
 
 export interface MonthlyDeduction {
@@ -51,8 +51,6 @@ export interface MonthCalc {
   salarioTotal: number;
   inst1Total: number;
   inst2Total: number;
-  ded1Total: number;
-  ded2Total: number;
   saldoPeriodo15: number;
   saldoPeriodo30: number;
   saldoRestante: number;
