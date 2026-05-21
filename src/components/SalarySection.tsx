@@ -24,77 +24,34 @@ export default function SalarySection({
   const getSalary = (month: number, field: 'installment_1' | 'installment_2') =>
     salaryConfigs.find((s) => s.month === month)?.[field] ?? 0;
 
-  const rows: Array<{
+  const periodRows: Array<{
     label: string | (() => string);
     getValue: (calc: MonthCalc) => number | null;
     isEditable?: boolean;
     editField?: 'installment_1' | 'installment_2';
     isBold?: boolean;
     colorFn?: (val: number) => string;
-    isPercent?: boolean;
     installmentSlot?: 1 | 2;
-    sectionBreak?: boolean;
   }> = [
-    {
-      label: 'Salário Parcela 1 (dia 15)',
-      getValue: (c) => getSalary(c.month, 'installment_1'),
-      isEditable: true,
-      editField: 'installment_1',
-    },
-    {
-      label: () => getSubtraiLabel(1, institutions),
-      getValue: (c) => c.inst1Total,
-      colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800',
-      installmentSlot: 1,
-    },
-    {
-      label: 'Saldo Período 15',
-      getValue: (c) => c.saldoPeriodo15,
-      colorFn: balanceColor,
-      isBold: true,
-    },
-    {
-      label: 'Salário Parcela 2 (dia 30)',
-      getValue: (c) => getSalary(c.month, 'installment_2'),
-      isEditable: true,
-      editField: 'installment_2',
-    },
-    {
-      label: () => getSubtraiLabel(2, institutions),
-      getValue: (c) => c.inst2Total,
-      colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800',
-      installmentSlot: 2,
-    },
-    {
-      label: 'Saldo Período 30',
-      getValue: (c) => c.saldoPeriodo30,
-      colorFn: balanceColor,
-      isBold: true,
-    },
-    {
-      label: 'SALÁRIO TOTAL',
-      getValue: (c) => c.salarioTotal,
-      isBold: true,
-    },
-    {
-      label: 'Total Fatura Líquida',
-      getValue: (c) => c.totalFaturaLiquida,
-      colorFn: (v) => v > 0 ? 'text-rose-700' : 'text-slate-400',
-      sectionBreak: true,
-    },
-    {
-      label: 'Saldo Restante',
-      getValue: (c) => c.saldoRestante,
-      colorFn: balanceColor,
-      isBold: true,
-    },
-    {
-      label: '% Comprometido do Salário',
-      getValue: (c) => c.percentComprometido,
-      isPercent: true,
-      colorFn: percentColor,
-      isBold: true,
-    },
+    { label: 'Salário Parcela 1 (dia 15)', getValue: (c) => getSalary(c.month, 'installment_1'), isEditable: true, editField: 'installment_1' },
+    { label: () => getSubtraiLabel(1, institutions), getValue: (c) => c.inst1Total, colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800', installmentSlot: 1 },
+    { label: 'Saldo Período 15', getValue: (c) => c.saldoPeriodo15, colorFn: balanceColor, isBold: true },
+    { label: 'Salário Parcela 2 (dia 30)', getValue: (c) => getSalary(c.month, 'installment_2'), isEditable: true, editField: 'installment_2' },
+    { label: () => getSubtraiLabel(2, institutions), getValue: (c) => c.inst2Total, colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800', installmentSlot: 2 },
+    { label: 'Saldo Período 30', getValue: (c) => c.saldoPeriodo30, colorFn: balanceColor, isBold: true },
+    { label: 'SALÁRIO TOTAL', getValue: (c) => c.salarioTotal, isBold: true },
+  ];
+
+  const summaryRows: Array<{
+    label: string;
+    getValue: (calc: MonthCalc) => number | null;
+    isBold?: boolean;
+    colorFn?: (val: number) => string;
+    isPercent?: boolean;
+  }> = [
+    { label: 'Total Fatura Líquida', getValue: (c) => c.totalFaturaLiquida, colorFn: (v) => v > 0 ? 'text-rose-400' : 'text-slate-400' },
+    { label: 'Saldo Restante', getValue: (c) => c.saldoRestante, colorFn: (v) => v < 0 ? 'text-red-400' : v > 0 ? 'text-emerald-400' : 'text-slate-500', isBold: true },
+    { label: '% Comprometido', getValue: (c) => c.percentComprometido, isPercent: true, colorFn: percentColor, isBold: true },
   ];
 
   return (
@@ -114,31 +71,22 @@ export default function SalarySection({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, rowIdx) => {
+            {periodRows.map((row, rowIdx) => {
               const label = typeof row.label === 'function' ? row.label() : row.label;
               const isSeparator = row.isBold && !row.isEditable;
-
               const rowBg = isSeparator ? 'bg-slate-100' : row.isEditable ? 'bg-emerald-50' : 'bg-white';
               const rowHover = isSeparator ? '' : row.isEditable ? 'hover:bg-emerald-100' : 'hover:bg-slate-50';
 
               return (
                 <tr
                   key={rowIdx}
-                  className={`group ${
-                    row.sectionBreak
-                      ? 'border-t-4 border-slate-400 bg-white hover:bg-slate-50'
-                      : isSeparator
-                      ? 'bg-slate-100 border-b border-slate-100 border-t-2 border-slate-300'
-                      : row.isEditable
-                      ? 'bg-emerald-50 border-b border-slate-100 hover:bg-emerald-100'
-                      : 'border-b border-slate-100 hover:bg-slate-50'
+                  className={`group border-b border-slate-100 ${
+                    isSeparator ? 'bg-slate-100 border-t-2 border-slate-300'
+                    : row.isEditable ? 'bg-emerald-50 hover:bg-emerald-100'
+                    : 'hover:bg-slate-50'
                   }`}
                 >
-                  <td
-                    className={`sticky left-0 z-10 ${row.sectionBreak ? 'bg-white hover:bg-slate-50' : `${rowBg} ${rowHover}`} px-4 py-2 ${
-                      row.isBold ? 'font-semibold text-slate-800' : 'text-slate-600'
-                    }`}
-                  >
+                  <td className={`sticky left-0 z-10 ${rowBg} ${rowHover} px-4 py-2 ${row.isBold ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
                     {row.installmentSlot ? (
                       <>
                         <button
@@ -162,34 +110,22 @@ export default function SalarySection({
                           />
                         )}
                       </>
-                    ) : (
-                      label
-                    )}
+                    ) : label}
                   </td>
                   {calculations.map((calc) => {
                     const raw = row.getValue(calc);
                     if (raw === null) return <td key={calc.month} className="px-2 py-2" />;
-
                     const colorClass = row.colorFn ? row.colorFn(raw) : 'text-slate-800';
-
                     if (row.isEditable && row.editField) {
                       return (
                         <td key={calc.month} className="px-2 py-1">
-                          <EditableCell
-                            value={raw}
-                            dimZero={false}
-                            onChange={(val) => onSalaryChange(calc.month, row.editField!, val)}
-                            className={`font-medium text-slate-800 ${colorClass}`}
-                          />
+                          <EditableCell value={raw} dimZero={false} onChange={(val) => onSalaryChange(calc.month, row.editField!, val)} className={`font-medium text-slate-800 ${colorClass}`} />
                         </td>
                       );
                     }
-
                     return (
                       <td key={calc.month} className={`px-2 py-2 text-right ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
-                        {row.isPercent
-                          ? raw > 0 ? formatPercent(raw) : <span className="text-slate-300">—</span>
-                          : raw === 0 ? <span className="text-slate-300">—</span> : formatCurrency(raw)}
+                        {raw === 0 ? <span className="text-slate-300">—</span> : formatCurrency(raw)}
                       </td>
                     );
                   })}
@@ -198,6 +134,33 @@ export default function SalarySection({
             })}
           </tbody>
         </table>
+
+        <div className="mx-3 mb-3 mt-2 rounded-xl overflow-hidden">
+          <table className="w-full text-sm border-collapse">
+            <tbody>
+              {summaryRows.map((row, idx) => (
+                <tr key={idx} className={`bg-slate-800 ${idx < summaryRows.length - 1 ? 'border-b border-slate-700' : ''}`}>
+                  <td className="sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 min-w-[200px]">
+                    {row.label}
+                  </td>
+                  {calculations.map((calc) => {
+                    const raw = row.getValue(calc);
+                    const colorClass = raw !== null && row.colorFn ? row.colorFn(raw) : 'text-slate-300';
+                    return (
+                      <td key={calc.month} className={`px-2 py-3 text-right min-w-[90px] ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
+                        {raw === null || raw === 0
+                          ? <span className="text-slate-600">—</span>
+                          : row.isPercent
+                          ? formatPercent(raw)
+                          : formatCurrency(raw)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );
