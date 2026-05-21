@@ -76,9 +76,9 @@ export default function DeductionsTable({
             {deductions.map((ded, idx) => (
               <tr
                 key={ded.id}
-                className={`border-b border-slate-100 group hover:bg-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                className={`border-b border-slate-100 group hover:bg-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700">
+                <td className={`sticky left-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} group-hover:bg-slate-100 px-4 py-2 font-medium text-slate-700`}>
                   <div className="flex items-center justify-between gap-2">
                     <span>{ded.description}</span>
                     <button

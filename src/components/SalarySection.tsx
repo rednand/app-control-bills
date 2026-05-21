@@ -116,19 +116,22 @@ export default function SalarySection({
               const label = typeof row.label === 'function' ? row.label() : row.label;
               const isSeparator = row.isBold && !row.isEditable;
 
+              const rowBg = isSeparator ? 'bg-slate-100' : row.isEditable ? 'bg-emerald-50' : 'bg-white';
+              const rowHover = isSeparator ? '' : row.isEditable ? 'hover:bg-emerald-100' : 'hover:bg-slate-50';
+
               return (
                 <tr
                   key={rowIdx}
-                  className={`border-b border-slate-100 ${
+                  className={`border-b border-slate-100 group ${
                     isSeparator
                       ? 'bg-slate-100 border-t-2 border-slate-300'
                       : row.isEditable
-                      ? 'bg-emerald-50/30 hover:bg-emerald-50'
+                      ? 'bg-emerald-50 hover:bg-emerald-100'
                       : 'hover:bg-slate-50'
                   }`}
                 >
                   <td
-                    className={`sticky left-0 z-10 bg-inherit px-4 py-2 ${
+                    className={`sticky left-0 z-10 ${rowBg} ${rowHover} px-4 py-2 ${
                       row.isBold ? 'font-semibold text-slate-800' : 'text-slate-600'
                     }`}
                   >

@@ -66,9 +66,9 @@ export default function InvoicesTable({
             {institutions.map((inst, idx) => (
               <tr
                 key={inst.id}
-                className={`border-b border-slate-100 group hover:bg-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                className={`border-b border-slate-100 group hover:bg-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700">
+                <td className={`sticky left-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} group-hover:bg-slate-100 px-4 py-2 font-medium text-slate-700`}>
                   <div className="flex items-center justify-between gap-2">
                     <span>{inst.name}</span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -118,7 +118,7 @@ export default function InvoicesTable({
                     />
                   </td>
                 ))}
-                <td className="sticky right-0 z-10 bg-inherit text-center px-3 py-2 text-slate-500 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]">
+                <td className={`sticky right-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} group-hover:bg-slate-100 text-center px-3 py-2 text-slate-500 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]`}>
                   Dia {inst.due_day}
                 </td>
               </tr>
