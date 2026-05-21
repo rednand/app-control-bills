@@ -56,13 +56,14 @@ export default function SalarySection({
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-slate-700 text-white px-4 py-3">
+        <span className="font-semibold text-sm">SALÁRIO E COMPROMETIMENTO</span>
+      </div>
       <div className="overflow-x-auto" data-table-scroll>
         <table className="w-full text-sm border-separate border-spacing-0">
           <thead>
             <tr className="bg-slate-700 text-white">
-              <th className="sticky left-0 z-20 bg-slate-700 text-left px-4 py-3 font-semibold min-w-[255px]">
-                SALÁRIO E COMPROMETIMENTO
-              </th>
+              <th className="sticky left-0 z-20 bg-slate-700 min-w-[255px]" />
               {MONTHS_SHORT.map((m) => (
                 <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px] border-b border-slate-600">
                   {m}
