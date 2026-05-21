@@ -196,6 +196,16 @@ export default function BillsApp() {
     });
   }, [institutions, invoices, deductions, monthlyDeductions, salaryConfigs]);
 
+  useEffect(() => {
+    const containers = Array.from(document.querySelectorAll<HTMLElement>('[data-table-scroll]'));
+    const handleScroll = (e: Event) => {
+      const { scrollLeft } = e.target as HTMLElement;
+      containers.forEach((c) => { if (c !== e.target) c.scrollLeft = scrollLeft; });
+    };
+    containers.forEach((c) => c.addEventListener('scroll', handleScroll, { passive: true }));
+    return () => containers.forEach((c) => c.removeEventListener('scroll', handleScroll));
+  }, [loading]);
+
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-900">

@@ -57,11 +57,11 @@ export default function DeductionsTable({
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" data-table-scroll>
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-slate-600 text-white">
-              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[200px]">
+              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[220px]">
                 SUBTRAÇÕES
               </th>
               {MONTHS_SHORT.map((m) => (
