@@ -142,7 +142,7 @@ export default function SalarySection({
 
               return (
                 <tr key={rowIdx}>
-                  <td className={`sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 ${borderB} ${isFirst ? 'rounded-tl-xl' : ''} ${isLast ? 'rounded-bl-xl' : ''}`}>
+                  <td className={`sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 ${borderB} ${isLast ? 'rounded-bl-xl' : ''}`}>
                     {row.label}
                   </td>
                   {calculations.map((calc, ci) => {
@@ -150,7 +150,7 @@ export default function SalarySection({
                     const colorClass = raw !== null && row.colorFn ? row.colorFn(raw) : 'text-slate-300';
                     const isLastCol = ci === calculations.length - 1;
                     return (
-                      <td key={calc.month} className={`px-2 py-3 text-right bg-slate-800 ${borderB} ${colorClass} ${row.isBold ? 'font-semibold' : ''} ${isFirst && isLastCol ? 'rounded-tr-xl' : ''} ${isLast && isLastCol ? 'rounded-br-xl' : ''}`}>
+                      <td key={calc.month} className={`px-2 py-3 text-right bg-slate-800 ${borderB} ${colorClass} ${row.isBold ? 'font-semibold' : ''} ${isLast && isLastCol ? 'rounded-br-xl' : ''}`}>
                         {raw === null || raw === 0
                           ? <span className="text-slate-600">—</span>
                           : row.isPercent ? formatPercent(raw) : formatCurrency(raw)}
