@@ -33,6 +33,7 @@ export default function SalarySection({
     colorFn?: (val: number) => string;
     isPercent?: boolean;
     installmentSlot?: 1 | 2;
+    sectionBreak?: boolean;
   }> = [
     {
       label: 'Salário Parcela 1 (dia 15)',
@@ -79,6 +80,7 @@ export default function SalarySection({
       label: 'Total Fatura Líquida',
       getValue: (c) => c.totalFaturaLiquida,
       colorFn: (v) => v > 0 ? 'text-rose-700' : 'text-slate-400',
+      sectionBreak: true,
     },
     {
       label: 'Saldo Restante',
@@ -122,16 +124,18 @@ export default function SalarySection({
               return (
                 <tr
                   key={rowIdx}
-                  className={`border-b border-slate-100 group ${
-                    isSeparator
-                      ? 'bg-slate-100 border-t-2 border-slate-300'
+                  className={`group ${
+                    row.sectionBreak
+                      ? 'border-t-4 border-slate-400 bg-white hover:bg-slate-50'
+                      : isSeparator
+                      ? 'bg-slate-100 border-b border-slate-100 border-t-2 border-slate-300'
                       : row.isEditable
-                      ? 'bg-emerald-50 hover:bg-emerald-100'
-                      : 'hover:bg-slate-50'
+                      ? 'bg-emerald-50 border-b border-slate-100 hover:bg-emerald-100'
+                      : 'border-b border-slate-100 hover:bg-slate-50'
                   }`}
                 >
                   <td
-                    className={`sticky left-0 z-10 ${rowBg} ${rowHover} px-4 py-2 ${
+                    className={`sticky left-0 z-10 ${row.sectionBreak ? 'bg-white hover:bg-slate-50' : `${rowBg} ${rowHover}`} px-4 py-2 ${
                       row.isBold ? 'font-semibold text-slate-800' : 'text-slate-600'
                     }`}
                   >
