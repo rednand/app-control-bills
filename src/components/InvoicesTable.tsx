@@ -46,18 +46,18 @@ export default function InvoicesTable({
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       <div className="overflow-x-auto" data-table-scroll>
-        <table className="w-full text-sm border-collapse">
+        <table className="w-full text-sm border-collapse table-fixed">
           <thead>
             <tr className="bg-slate-800 text-white">
-              <th className="sticky left-0 z-20 bg-slate-800 text-left px-4 py-3 font-semibold min-w-[255px]">
+              <th className="sticky left-0 z-20 bg-slate-800 text-left px-4 py-3 font-semibold w-[255px]">
                 CONTROLE DE FATURAS
               </th>
               {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px]">
+                <th key={m} className="px-3 py-3 text-center font-medium w-[90px]">
                   {m}
                 </th>
               ))}
-              <th className="sticky right-0 z-20 bg-slate-800 text-center px-3 py-3 font-medium min-w-[100px] shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.3)]">
+              <th className="sticky right-0 z-20 bg-slate-800 text-center px-3 py-3 font-medium w-[100px] shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.3)]">
                 Vencimento
               </th>
             </tr>
