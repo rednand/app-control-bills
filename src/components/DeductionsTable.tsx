@@ -61,7 +61,7 @@ export default function DeductionsTable({
         <table className="w-full text-sm border-collapse table-fixed">
           <thead>
             <tr className="bg-slate-600 text-white">
-              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold w-[255px]">
+              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold w-[180px]">
                 SUBTRAÇÕES
               </th>
               {MONTHS_SHORT.map((m) => (

@@ -63,7 +63,7 @@ export default function SalarySection({
         <table className="w-full text-sm border-separate border-spacing-0 table-fixed">
           <thead>
             <tr className="bg-slate-700 text-white">
-              <th className="sticky left-0 z-20 bg-slate-700 w-[255px]" />
+              <th className="sticky left-0 z-20 bg-slate-700 w-[180px]" />
               {MONTHS_SHORT.map((m) => (
                 <th key={m} className="px-3 py-3 text-center font-medium w-[90px] border-b border-slate-600">
                   {m}
