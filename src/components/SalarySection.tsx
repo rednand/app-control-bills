@@ -57,14 +57,14 @@ export default function SalarySection({
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
+        <table className="w-full text-sm border-separate border-spacing-0">
           <thead>
             <tr className="bg-slate-700 text-white">
               <th className="sticky left-0 z-20 bg-slate-700 text-left px-4 py-3 font-semibold min-w-[200px]">
                 SALÁRIO E COMPROMETIMENTO
               </th>
               {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px]">
+                <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px] border-b border-slate-600">
                   {m}
                 </th>
               ))}
@@ -73,20 +73,15 @@ export default function SalarySection({
           <tbody>
             {periodRows.map((row, rowIdx) => {
               const label = typeof row.label === 'function' ? row.label() : row.label;
-              const isSeparator = row.isBold && !row.isEditable;
-              const rowBg = isSeparator ? 'bg-slate-100' : row.isEditable ? 'bg-emerald-50' : 'bg-white';
-              const rowHover = isSeparator ? '' : row.isEditable ? 'hover:bg-emerald-100' : 'hover:bg-slate-50';
+              const isSeparator = !!(row.isBold && !row.isEditable);
+              const cellBg = isSeparator ? 'bg-slate-100' : row.isEditable ? 'bg-emerald-50 hover:bg-emerald-100' : 'hover:bg-slate-50';
+              const stickyBg = isSeparator ? 'bg-slate-100' : row.isEditable ? 'bg-emerald-50' : 'bg-white';
+              const stickyHover = isSeparator ? '' : row.isEditable ? 'group-hover:bg-emerald-100' : 'group-hover:bg-slate-50';
+              const borderTop = isSeparator ? 'border-t-2 border-t-slate-300' : '';
 
               return (
-                <tr
-                  key={rowIdx}
-                  className={`group border-b border-slate-100 ${
-                    isSeparator ? 'bg-slate-100 border-t-2 border-slate-300'
-                    : row.isEditable ? 'bg-emerald-50 hover:bg-emerald-100'
-                    : 'hover:bg-slate-50'
-                  }`}
-                >
-                  <td className={`sticky left-0 z-10 ${rowBg} ${rowHover} px-4 py-2 ${row.isBold ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
+                <tr key={rowIdx} className="group">
+                  <td className={`sticky left-0 z-10 ${stickyBg} ${stickyHover} px-4 py-2 border-b border-slate-100 ${borderTop} ${row.isBold ? 'font-semibold text-slate-800' : 'text-slate-600'}`}>
                     {row.installmentSlot ? (
                       <>
                         <button
@@ -114,17 +109,17 @@ export default function SalarySection({
                   </td>
                   {calculations.map((calc) => {
                     const raw = row.getValue(calc);
-                    if (raw === null) return <td key={calc.month} className="px-2 py-2" />;
+                    if (raw === null) return <td key={calc.month} className={`px-2 py-2 border-b border-slate-100 ${borderTop} ${cellBg}`} />;
                     const colorClass = row.colorFn ? row.colorFn(raw) : 'text-slate-800';
                     if (row.isEditable && row.editField) {
                       return (
-                        <td key={calc.month} className="px-2 py-1">
+                        <td key={calc.month} className={`px-2 py-1 border-b border-slate-100 ${cellBg}`}>
                           <EditableCell value={raw} dimZero={false} onChange={(val) => onSalaryChange(calc.month, row.editField!, val)} className={`font-medium text-slate-800 ${colorClass}`} />
                         </td>
                       );
                     }
                     return (
-                      <td key={calc.month} className={`px-2 py-2 text-right ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
+                      <td key={calc.month} className={`px-2 py-2 text-right border-b border-slate-100 ${borderTop} ${cellBg} ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
                         {raw === 0 ? <span className="text-slate-300">—</span> : formatCurrency(raw)}
                       </td>
                     );
@@ -132,40 +127,45 @@ export default function SalarySection({
                 </tr>
               );
             })}
+
+            {/* Spacer */}
+            <tr aria-hidden="true">
+              <td colSpan={1 + calculations.length} className="h-3 p-0 bg-white" />
+            </tr>
+
+            {/* Summary card rows */}
+            {summaryRows.map((row, rowIdx) => {
+              const isFirst = rowIdx === 0;
+              const isLast = rowIdx === summaryRows.length - 1;
+              const borderB = !isLast ? 'border-b border-slate-700' : '';
+
+              return (
+                <tr key={rowIdx}>
+                  <td className={`sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 ${borderB} ${isFirst ? 'rounded-tl-xl' : ''} ${isLast ? 'rounded-bl-xl' : ''}`}>
+                    {row.label}
+                  </td>
+                  {calculations.map((calc, ci) => {
+                    const raw = row.getValue(calc);
+                    const colorClass = raw !== null && row.colorFn ? row.colorFn(raw) : 'text-slate-300';
+                    const isLastCol = ci === calculations.length - 1;
+                    return (
+                      <td key={calc.month} className={`px-2 py-3 text-right bg-slate-800 ${borderB} ${colorClass} ${row.isBold ? 'font-semibold' : ''} ${isFirst && isLastCol ? 'rounded-tr-xl' : ''} ${isLast && isLastCol ? 'rounded-br-xl' : ''}`}>
+                        {raw === null || raw === 0
+                          ? <span className="text-slate-600">—</span>
+                          : row.isPercent ? formatPercent(raw) : formatCurrency(raw)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+
+            {/* Bottom spacer */}
+            <tr aria-hidden="true">
+              <td colSpan={1 + calculations.length} className="h-3 p-0 bg-white" />
+            </tr>
           </tbody>
         </table>
-
-        <div className="mt-2 mb-3">
-          <table className="w-full text-sm border-collapse">
-            <tbody>
-              {summaryRows.map((row, rowIdx) => {
-                const isFirst = rowIdx === 0;
-                const isLast = rowIdx === summaryRows.length - 1;
-                return (
-                  <tr key={rowIdx} className={`bg-slate-800 ${!isLast ? 'border-b border-slate-700' : ''}`}>
-                    <td className={`sticky left-0 z-10 bg-slate-800 px-4 py-3 font-semibold text-slate-200 min-w-[200px] ${isFirst ? 'rounded-tl-xl' : ''} ${isLast ? 'rounded-bl-xl' : ''}`}>
-                      {row.label}
-                    </td>
-                    {calculations.map((calc, ci) => {
-                      const raw = row.getValue(calc);
-                      const colorClass = raw !== null && row.colorFn ? row.colorFn(raw) : 'text-slate-300';
-                      const isLastCol = ci === calculations.length - 1;
-                      return (
-                        <td key={calc.month} className={`px-2 py-3 text-right min-w-[90px] ${colorClass} ${row.isBold ? 'font-semibold' : ''} ${isFirst && isLastCol ? 'rounded-tr-xl' : ''} ${isLast && isLastCol ? 'rounded-br-xl' : ''}`}>
-                          {raw === null || raw === 0
-                            ? <span className="text-slate-600">—</span>
-                            : row.isPercent
-                            ? formatPercent(raw)
-                            : formatCurrency(raw)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
       </div>
     </section>
   );
