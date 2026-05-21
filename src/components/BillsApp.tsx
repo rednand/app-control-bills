@@ -89,14 +89,14 @@ export default function BillsApp() {
     fetch(`/api/institutions/${id}`, { method: 'DELETE' });
   };
 
-  const handleSalaryPeriodAssign = (deductionId: string, period: 1 | 2 | null) => {
+  const handleDeductionInstitutionAssign = (deductionId: string, institutionId: string | null) => {
     setDeductions((prev) =>
-      prev.map((d) => (d.id === deductionId ? { ...d, salary_period: period } : d))
+      prev.map((d) => (d.id === deductionId ? { ...d, institution_id: institutionId } : d))
     );
     fetch(`/api/deductions/${deductionId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ salary_period: period }),
+      body: JSON.stringify({ institution_id: institutionId }),
     });
   };
 
@@ -161,22 +161,26 @@ export default function BillsApp() {
 
       const inst1Total = institutions.filter((i) => i.payment_installment === 1).reduce((sum, inst) => {
         const inv = invoices.find((inv) => inv.institution_id === inst.id && inv.month === month);
-        return sum + (inv?.amount ?? 0);
+        const invoiceAmount = inv?.amount ?? 0;
+        const linked = deductions
+          .filter((d) => d.institution_id === inst.id)
+          .reduce((dSum, ded) => {
+            const md = monthlyDeductions.find((m) => m.deduction_id === ded.id && m.month === month);
+            return dSum + (md?.amount ?? 0);
+          }, 0);
+        return sum + Math.max(0, invoiceAmount - linked);
       }, 0);
 
       const inst2Total = institutions.filter((i) => i.payment_installment === 2).reduce((sum, inst) => {
         const inv = invoices.find((inv) => inv.institution_id === inst.id && inv.month === month);
-        return sum + (inv?.amount ?? 0);
-      }, 0);
-
-      const ded1Total = deductions.filter((d) => d.salary_period === 1).reduce((sum, ded) => {
-        const md = monthlyDeductions.find((m) => m.deduction_id === ded.id && m.month === month);
-        return sum + (md?.amount ?? 0);
-      }, 0);
-
-      const ded2Total = deductions.filter((d) => d.salary_period === 2).reduce((sum, ded) => {
-        const md = monthlyDeductions.find((m) => m.deduction_id === ded.id && m.month === month);
-        return sum + (md?.amount ?? 0);
+        const invoiceAmount = inv?.amount ?? 0;
+        const linked = deductions
+          .filter((d) => d.institution_id === inst.id)
+          .reduce((dSum, ded) => {
+            const md = monthlyDeductions.find((m) => m.deduction_id === ded.id && m.month === month);
+            return dSum + (md?.amount ?? 0);
+          }, 0);
+        return sum + Math.max(0, invoiceAmount - linked);
       }, 0);
 
       const totalFaturaLiquida = subtotalFatura - totalSubtracoes;
@@ -184,9 +188,8 @@ export default function BillsApp() {
       return {
         month, subtotalFatura, totalSubtracoes, totalFaturaLiquida,
         inst1Salary, inst2Salary, salarioTotal, inst1Total, inst2Total,
-        ded1Total, ded2Total,
-        saldoPeriodo15: inst1Salary - inst1Total + ded1Total,
-        saldoPeriodo30: inst2Salary - inst2Total + ded2Total,
+        saldoPeriodo15: inst1Salary - inst1Total,
+        saldoPeriodo30: inst2Salary - inst2Total,
         saldoRestante: salarioTotal - totalFaturaLiquida,
         percentComprometido: salarioTotal > 0 ? totalFaturaLiquida / salarioTotal : 0,
       };
@@ -254,17 +257,17 @@ export default function BillsApp() {
         />
         <DeductionsTable
           deductions={deductions} monthlyDeductions={monthlyDeductions}
+          institutions={institutions}
           totals={calculations.map((c) => c.totalSubtracoes)}
           onDeductionChange={handleDeductionChange}
           onAddDeduction={handleAddDeduction}
           onDeleteDeduction={handleDeleteDeduction}
+          onDeductionInstitutionAssign={handleDeductionInstitutionAssign}
         />
         <SalarySection
           institutions={institutions} calculations={calculations}
           salaryConfigs={salaryConfigs} onSalaryChange={handleSalaryChange}
           onInstallmentAssign={handleInstallmentAssign}
-          deductions={deductions}
-          onSalaryPeriodAssign={handleSalaryPeriodAssign}
         />
       </main>
     </div>

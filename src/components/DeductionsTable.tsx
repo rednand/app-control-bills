@@ -1,32 +1,46 @@
 'use client';
 
 import { useState } from 'react';
-import { Deduction, MonthlyDeduction } from '@/lib/types';
+import { Deduction, Institution, MonthlyDeduction } from '@/lib/types';
 import { MONTHS_SHORT, formatCurrency } from '@/lib/utils';
 import EditableCell from './EditableCell';
+import InstitutionPicker from './InstitutionPicker';
 
 interface Props {
   deductions: Deduction[];
   monthlyDeductions: MonthlyDeduction[];
+  institutions: Institution[];
   totals: number[];
   onDeductionChange: (deductionId: string, month: number, value: number, note?: string) => void;
   onAddDeduction: (description: string) => void;
   onDeleteDeduction: (id: string) => void;
+  onDeductionInstitutionAssign: (deductionId: string, institutionId: string | null) => void;
 }
 
 export default function DeductionsTable({
   deductions,
   monthlyDeductions,
+  institutions,
   totals,
   onDeductionChange,
   onAddDeduction,
   onDeleteDeduction,
+  onDeductionInstitutionAssign,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [newDesc, setNewDesc] = useState('');
+  const [activePicker, setActivePicker] = useState<string | null>(null);
+  const [pickerAnchor, setPickerAnchor] = useState<DOMRect | null>(null);
 
   const getEntry = (deductionId: string, month: number) =>
     monthlyDeductions.find((d) => d.deduction_id === deductionId && d.month === month);
+
+  const getInstitutionName = (institutionId: string | null) => {
+    if (!institutionId) return null;
+    return institutions.find((i) => i.id === institutionId)?.abbreviation?.trim() ||
+      institutions.find((i) => i.id === institutionId)?.name ||
+      null;
+  };
 
   const handleAdd = () => {
     if (!newDesc.trim()) return;
@@ -35,13 +49,19 @@ export default function DeductionsTable({
     setShowForm(false);
   };
 
+  const openPicker = (dedId: string, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPickerAnchor(rect);
+    setActivePicker(activePicker === dedId ? null : dedId);
+  };
+
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-slate-600 text-white">
-              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[180px]">
+              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[260px]">
                 SUBTRAÇÕES
               </th>
               {MONTHS_SHORT.map((m) => (
@@ -58,15 +78,37 @@ export default function DeductionsTable({
                 key={ded.id}
                 className={`border-b border-slate-100 group hover:bg-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700 flex items-center justify-between gap-2">
-                  <span>{ded.description}</span>
+                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700">
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{ded.description}</span>
+                    <button
+                      onClick={() => onDeleteDeduction(ded.id)}
+                      className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs transition-opacity flex-shrink-0"
+                      title="Remover"
+                    >
+                      ✕
+                    </button>
+                  </div>
                   <button
-                    onClick={() => onDeleteDeduction(ded.id)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 text-xs transition-opacity"
-                    title="Remover"
+                    onClick={(e) => openPicker(ded.id, e)}
+                    className={
+                      ded.institution_id
+                        ? 'text-[10px] text-slate-400 hover:text-slate-600 text-left transition-colors'
+                        : 'text-[10px] text-slate-300 hover:text-slate-500 text-left transition-colors'
+                    }
+                    title="Clique para vincular a uma fatura"
                   >
-                    ✕
+                    {getInstitutionName(ded.institution_id) ?? '+ vincular fatura'}
                   </button>
+                  {activePicker === ded.id && pickerAnchor && (
+                    <InstitutionPicker
+                      institutions={institutions}
+                      currentId={ded.institution_id}
+                      onSelect={(id) => onDeductionInstitutionAssign(ded.id, id)}
+                      onClose={() => setActivePicker(null)}
+                      anchorRect={pickerAnchor}
+                    />
+                  )}
                 </td>
                 {MONTHS_SHORT.map((_, mi) => {
                   const entry = getEntry(ded.id, mi + 1);
