@@ -196,6 +196,16 @@ export default function BillsApp() {
     });
   }, [institutions, invoices, deductions, monthlyDeductions, salaryConfigs]);
 
+  useEffect(() => {
+    const containers = Array.from(document.querySelectorAll<HTMLElement>('[data-table-scroll]'));
+    const handleScroll = (e: Event) => {
+      const { scrollLeft } = e.target as HTMLElement;
+      containers.forEach((c) => { if (c !== e.target) c.scrollLeft = scrollLeft; });
+    };
+    containers.forEach((c) => c.addEventListener('scroll', handleScroll, { passive: true }));
+    return () => containers.forEach((c) => c.removeEventListener('scroll', handleScroll));
+  }, [loading]);
+
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-900">
@@ -228,25 +238,25 @@ export default function BillsApp() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-slate-900 text-white px-6 py-4 shadow-lg sticky top-0 z-30">
-        <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight">Controle de Faturas</h1>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <button onClick={() => setYear((y) => y - 1)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-700 transition-colors text-slate-300 hover:text-white">‹</button>
-              <span className="text-lg font-semibold tabular-nums w-16 text-center">{year}</span>
-              <button onClick={() => setYear((y) => y + 1)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-700 transition-colors text-slate-300 hover:text-white">›</button>
+      <header className="bg-slate-900 text-white px-3 sm:px-6 py-3 sm:py-4 shadow-lg sticky top-0 z-30">
+        <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-2">
+          <h1 className="text-base sm:text-xl font-bold tracking-tight truncate">Controle de Faturas</h1>
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button onClick={() => setYear((y) => y - 1)} className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded hover:bg-slate-700 transition-colors text-slate-300 hover:text-white">‹</button>
+              <span className="text-base sm:text-lg font-semibold tabular-nums w-14 sm:w-16 text-center">{year}</span>
+              <button onClick={() => setYear((y) => y + 1)} className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded hover:bg-slate-700 transition-colors text-slate-300 hover:text-white">›</button>
             </div>
-            <div className="flex items-center gap-3 border-l border-slate-700 pl-4">
-              {session.user?.image && <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />}
+            <div className="flex items-center gap-2 sm:gap-3 border-l border-slate-700 pl-2 sm:pl-4">
+              {session.user?.image && <img src={session.user.image} alt="" className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex-shrink-0" />}
               <span className="text-sm text-slate-300 hidden sm:block">{session.user?.name}</span>
-              <button onClick={() => signOut()} className="text-xs text-slate-400 hover:text-white transition-colors">Sair</button>
+              <button onClick={() => signOut()} className="text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">Sair</button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-screen-2xl mx-auto px-4 py-6 flex flex-col gap-6">
+      <main className="max-w-screen-2xl mx-auto px-2 sm:px-4 py-4 sm:py-6 flex flex-col gap-4 sm:gap-6">
         <InvoicesTable
           institutions={institutions} invoices={invoices}
           subtotals={calculations.map((c) => c.subtotalFatura)}

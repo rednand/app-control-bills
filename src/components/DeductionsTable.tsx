@@ -57,28 +57,28 @@ export default function DeductionsTable({
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
+      <div className="overflow-x-auto" data-table-scroll>
+        <table className="w-full text-sm border-collapse table-fixed">
           <thead>
             <tr className="bg-slate-600 text-white">
-              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold min-w-[260px]">
+              <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold w-[255px]">
                 SUBTRAÇÕES
               </th>
               {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px]">
+                <th key={m} className="px-3 py-3 text-center font-medium w-[90px]">
                   {m}
                 </th>
               ))}
-              <th className="min-w-[100px]" />
+              <th className="w-[100px]" />
             </tr>
           </thead>
           <tbody>
             {deductions.map((ded, idx) => (
               <tr
                 key={ded.id}
-                className={`border-b border-slate-100 group hover:bg-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                className={`border-b border-slate-100 group hover:bg-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700">
+                <td className={`sticky left-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} group-hover:bg-slate-100 px-4 py-2 font-medium text-slate-700`}>
                   <div className="flex items-center justify-between gap-2">
                     <span>{ded.description}</span>
                     <button

@@ -45,19 +45,19 @@ export default function InvoicesTable({
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
+      <div className="overflow-x-auto" data-table-scroll>
+        <table className="w-full text-sm border-collapse table-fixed">
           <thead>
             <tr className="bg-slate-800 text-white">
-              <th className="sticky left-0 z-20 bg-slate-800 text-left px-4 py-3 font-semibold min-w-[260px]">
+              <th className="sticky left-0 z-20 bg-slate-800 text-left px-4 py-3 font-semibold w-[255px]">
                 CONTROLE DE FATURAS
               </th>
               {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium min-w-[90px]">
+                <th key={m} className="px-3 py-3 text-center font-medium w-[90px]">
                   {m}
                 </th>
               ))}
-              <th className="sticky right-0 z-20 bg-slate-800 text-center px-3 py-3 font-medium min-w-[100px] shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.3)]">
+              <th className="sticky right-0 z-20 bg-slate-800 text-center px-3 py-3 font-medium w-[100px] shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.3)]">
                 Vencimento
               </th>
             </tr>
@@ -66,9 +66,9 @@ export default function InvoicesTable({
             {institutions.map((inst, idx) => (
               <tr
                 key={inst.id}
-                className={`border-b border-slate-100 group hover:bg-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                className={`border-b border-slate-100 group hover:bg-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2 font-medium text-slate-700">
+                <td className={`sticky left-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} group-hover:bg-slate-100 px-4 py-2 font-medium text-slate-700`}>
                   <div className="flex items-center justify-between gap-2">
                     <span>{inst.name}</span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -118,7 +118,7 @@ export default function InvoicesTable({
                     />
                   </td>
                 ))}
-                <td className="sticky right-0 z-10 bg-inherit text-center px-3 py-2 text-slate-500 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]">
+                <td className={`sticky right-0 z-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} group-hover:bg-slate-100 text-center px-3 py-2 text-slate-500 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]`}>
                   Dia {inst.due_day}
                 </td>
               </tr>
