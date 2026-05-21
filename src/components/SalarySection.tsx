@@ -101,7 +101,7 @@ export default function SalarySection({
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-slate-700 text-white">
-              <th className="sticky left-0 z-20 bg-slate-700 text-left px-4 py-3 font-semibold min-w-[260px]">
+              <th className="sticky left-0 z-20 bg-slate-700 text-left px-4 py-3 font-semibold min-w-[200px]">
                 SALÁRIO E COMPROMETIMENTO
               </th>
               {MONTHS_SHORT.map((m) => (
