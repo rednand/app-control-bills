@@ -1,141 +1,120 @@
-# Implementation Plan: Subtração Vinculada a Fatura Específica
+# Implementation Plan: [FEATURE]
 
-**Branch**: `005-deduction-invoice-link` | **Date**: 2026-05-21 | **Spec**: [spec.md](./spec.md)
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 
-**Input**: Feature specification from `specs/005-deduction-invoice-link/spec.md`
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+
+**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-Substituir a abordagem "Soma" (feature 004) por um modelo onde cada subtração pode ser vinculada a uma instituição específica. O valor dessa instituição na seção de salário passa a ser `fatura_bruta − deduções_vinculadas`, simplificando o cálculo do saldo por período e eliminando as linhas "Soma" redundantes.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: TypeScript (strict mode), Next.js 15 App Router, React 19
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
 
-**Primary Dependencies**: next-auth 4 (Google OAuth), Mongoose (MongoDB)
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
 
-**Storage**: MongoDB — collection `bills_deductions` (campo `salary_period` substituído por `institution_id`)
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
-**Testing**: `npm run lint` + `npx tsc --noEmit` + validação manual no browser
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
-**Target Platform**: Web (single-page, Next.js App Router)
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
 
-**Project Type**: Web application (single-page personal finance tool)
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 
-**Performance Goals**: Atualização imediata de cálculos após mudança de vínculo (useMemo em <10ms para 12 meses × ~10 instituições)
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
 
-**Constraints**: Todas as derivações em `useMemo`; sem estado persistido derivado; `EditableCell` como primitivo de edição inline
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 
-**Scale/Scope**: Uso pessoal single-user; ~10 instituições, ~5 subtrações, 12 meses
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
-| Princípio | Questão Gate | Status |
-|-----------|--------------|--------|
-| I. Calculation Integrity | `inst1Total`/`inst2Total` continuam derivados via `useMemo` dos arrays-fonte? | [x] |
-| II. Optimistic UI | `handleDeductionInstitutionAssign` atualiza estado local antes do fetch? | [x] |
-| III. Single-User Simplicity | Nenhum novo fluxo de auth ou rota introduzido? | [x] |
-| IV. Data Integrity | Nenhuma nova collection; `institution_id` é campo nullable no documento existente? | [x] |
-| V. No Dead Code | `DeductionSelector.tsx`, `getSomaLabel`, `salary_period`, `ded1Total`/`ded2Total` removidos? | [x] |
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+| Principle | Gate Question | Status |
+|-----------|---------------|--------|
+| I. Calculation Integrity | Are all derived values computed via `useMemo` from source arrays only? | [ ] |
+| II. Optimistic UI | Does every write update local state immediately before MongoDB persists? | [ ] |
+| III. Single-User Simplicity | Does this feature avoid multi-tenancy, auth flows, or routing? | [ ] |
+| IV. Data Integrity | Does every new collection/upsert define a unique Mongoose index? | [ ] |
+| V. No Dead Code | Are there no unused components, types, or duplicate patterns introduced? | [ ] |
+| VI. Responsividade | Do all new or refactored components work on mobile (≥375px) and desktop? | [ ] |
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/005-deduction-invoice-link/
-├── plan.md              ← este arquivo
-├── spec.md
-├── research.md
-├── data-model.md
-├── quickstart.md
-├── contracts/
-│   └── deduction-institution-api.md
-├── checklists/
-│   └── requirements.md
-└── tasks.md             (gerado pelo /speckit-tasks)
+specs/[###-feature]/
+├── plan.md              # This file (/speckit-plan command output)
+├── research.md          # Phase 0 output (/speckit-plan command)
+├── data-model.md        # Phase 1 output (/speckit-plan command)
+├── quickstart.md        # Phase 1 output (/speckit-plan command)
+├── contracts/           # Phase 1 output (/speckit-plan command)
+└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
 ```
 
-### Source Code (arquivos afetados)
+### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
 
 ```text
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── lib/
-│   ├── types.ts                          ← Deduction.institution_id; remove ded1Total/ded2Total
-│   ├── utils.ts                          ← remove getSomaLabel
-│   └── models/
-│       └── Deduction.ts                  ← remove salary_period, add institution_id
-├── app/api/
-│   └── deductions/
-│       ├── route.ts                      ← POST response inclui institution_id
-│       └── [id]/route.ts                 ← PATCH: salary_period → institution_id
-└── components/
-    ├── BillsApp.tsx                      ← useMemo atualizado; handleDeductionInstitutionAssign
-    ├── SalarySection.tsx                 ← remove somaSlot rows + props relacionadas
-    ├── DeductionsTable.tsx               ← add institution display + InstitutionPicker
-    ├── InstitutionPicker.tsx             ← NOVO: portal dropdown single-select para instituição
-    └── DeductionSelector.tsx             ← DELETAR
+├── models/
+├── services/
+├── cli/
+└── lib/
+
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-## Implementation Phases
-
-### Phase A — Data Layer
-
-1. **`src/lib/types.ts`**
-   - `Deduction`: remove `salary_period`, add `institution_id: string | null`
-   - `MonthCalc`: remove `ded1Total`, `ded2Total`
-
-2. **`src/lib/models/Deduction.ts`**
-   - Remove `salary_period` do Schema e da interface `IDeduction`
-   - Add `institution_id: { type: String, default: null }`
-
-3. **`src/app/api/deductions/[id]/route.ts`**
-   - PATCH handler: lê `institution_id` em vez de `salary_period`
-   - `$set: { institution_id: institution_id ?? null }`
-
-4. **`src/app/api/deductions/route.ts`**
-   - POST: garantir que `institution_id: null` está na resposta (via `{ ...doc, id }`)
-
-### Phase B — Calculation Update (BillsApp)
-
-5. **`src/components/BillsApp.tsx`** — useMemo
-   - `inst1Total`: para cada inst com `payment_installment === 1`, calcula `max(0, invoiceAmount − linkedDeductionsTotal)`
-   - `inst2Total`: idem para período 2
-   - Remove `ded1Total`, `ded2Total`
-   - `saldoPeriodo15 = inst1Salary − inst1Total`
-   - `saldoPeriodo30 = inst2Salary − inst2Total`
-
-6. **`src/components/BillsApp.tsx`** — handlers
-   - Remove `handleSalaryPeriodAssign`
-   - Add `handleDeductionInstitutionAssign(deductionId, institutionId)` — otimista + PATCH `/api/deductions/[id]`
-   - Pass `institutions` e `onDeductionInstitutionAssign` para `DeductionsTable`
-   - Remove `onSalaryPeriodAssign` e `deductions` prop de `SalarySection`
-
-### Phase C — UI Components
-
-7. **`src/components/InstitutionPicker.tsx`** — NOVO
-   - Portal dropdown (mesmo padrão de `InstallmentSelector`)
-   - Lista de instituições com clique único (não checkbox)
-   - Item "Nenhuma" no topo para remover vínculo
-   - Fecha ao clicar fora
-
-8. **`src/components/DeductionsTable.tsx`**
-   - Add props: `institutions: Institution[]`, `onDeductionInstitutionAssign: (id: string, institutionId: string | null) => void`
-   - Cada linha exibe o nome da instituição vinculada (ou "—") como botão clicável
-   - Clique abre `InstitutionPicker`
-
-9. **`src/components/SalarySection.tsx`**
-   - Remove props: `deductions`, `onSalaryPeriodAssign`
-   - Remove linhas `somaSlot` do array `rows`
-   - Remove `activeSomaSelector`, `somaAnchorRect` state
-   - Remove import de `DeductionSelector` e `getSomaLabel`
-
-10. **`src/lib/utils.ts`**
-    - Remove `getSomaLabel`
-
-11. **`src/components/DeductionSelector.tsx`**
-    - **DELETAR** arquivo
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
-Sem violações do Constitution Check. Nenhuma justificativa necessária.
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

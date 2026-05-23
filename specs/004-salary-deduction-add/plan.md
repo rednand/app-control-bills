@@ -1,37 +1,40 @@
-# Implementation Plan: Soma de Subtrações no Período do Salário
+# Implementation Plan: [FEATURE]
 
-**Branch**: `004-salary-deduction-add` | **Date**: 2026-05-20 | **Spec**: [spec.md](./spec.md)
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 
-**Input**: Feature specification from `/specs/004-salary-deduction-add/spec.md`
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+
+**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-Adicionar campo `salary_period` ao model `Deduction` (espelhando `payment_installment` em
-`Institution`). Na seção "Salário e Comprometimento", inserir linhas "Soma [subtrações]"
-abaixo de cada "Subtrai [instituições]". O valor mensal das subtrações vinculadas é somado
-ao Saldo do período correspondente. Total Fatura Líquida e Total Subtrações não são
-afetados.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5 / Node 20 (Next.js 15)
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
 
-**Primary Dependencies**: React 19, Tailwind CSS, Mongoose 8
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
 
-**Storage**: MongoDB — campo `salary_period` adicionado ao model `Deduction`; sem novas collections
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
-**Testing**: Manual via `npm run dev`
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
-**Target Platform**: Web (navegador desktop)
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
 
-**Project Type**: Single-page web application
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 
-**Performance Goals**: Atualização imediata ao vincular/desvincular subtrações (< 1s)
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
 
-**Constraints**: Implementação espelha simetricamente a feature 002 (salary-subtraction).
-Máximo de reuso de padrões existentes (InstallmentSelector → DeductionSelector)
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 
-**Scale/Scope**: Uso pessoal (< 20 itens de subtração)
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
@@ -39,49 +42,78 @@ Máximo de reuso de padrões existentes (InstallmentSelector → DeductionSelect
 
 | Principle | Gate Question | Status |
 |-----------|---------------|--------|
-| I. Calculation Integrity | ded1Total e ded2Total derivados via useMemo dos arrays de fonte? | ✅ Pass |
-| II. Optimistic UI | handleSalaryPeriodAssign atualiza estado local antes do PATCH? | ✅ Pass |
-| III. Single-User Simplicity | Sem auth, routing, ou multi-tenancy? | ✅ Pass |
-| IV. Data Integrity | salary_period nullable no model; sem novo índice único necessário | ✅ Pass |
-| V. No Dead Code | DeductionSelector segue padrão existente; getSomaLabel espelha getSubtraiLabel | ✅ Pass |
+| I. Calculation Integrity | Are all derived values computed via `useMemo` from source arrays only? | [ ] |
+| II. Optimistic UI | Does every write update local state immediately before Supabase persists? | [ ] |
+| III. Single-User Simplicity | Does this feature avoid multi-tenancy, auth flows, or routing? | [ ] |
+| IV. Data Integrity | Does every new table/upsert define a unique constraint? | [ ] |
+| V. No Dead Code | Are there no unused components, types, or duplicate patterns introduced? | [ ] |
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/004-salary-deduction-add/
-├── plan.md              # Este arquivo
-├── research.md          # Phase 0
-├── data-model.md        # Phase 1
-├── quickstart.md        # Phase 1
-├── contracts/
-│   └── salary-section-soma.md
-└── tasks.md             # /speckit-tasks
+specs/[###-feature]/
+├── plan.md              # This file (/speckit-plan command output)
+├── research.md          # Phase 0 output (/speckit-plan command)
+├── data-model.md        # Phase 1 output (/speckit-plan command)
+├── quickstart.md        # Phase 1 output (/speckit-plan command)
+├── contracts/           # Phase 1 output (/speckit-plan command)
+└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
 ```
 
 ### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
 
 ```text
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── lib/
+├── models/
+├── services/
+├── cli/
+└── lib/
+
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
 │   ├── models/
-│   │   └── Deduction.ts        # + salary_period: { type: Number, enum: [1,2,null], default: null }
-│   ├── types.ts                # Deduction + salary_period; MonthCalc + ded1Total, ded2Total
-│   └── utils.ts                # + getSomaLabel(period, deductions)
-├── app/
+│   ├── services/
 │   └── api/
-│       └── deductions/
-│           └── [id]/route.ts   # + PATCH handler para salary_period
-├── components/
-│   ├── BillsApp.tsx            # + handleSalaryPeriodAssign; useMemo atualizado; nova prop para SalarySection
-│   ├── SalarySection.tsx       # + linhas "Soma" com DeductionSelector
-│   └── DeductionSelector.tsx   # novo componente (espelha InstallmentSelector)
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Single project. Um novo componente `DeductionSelector` é necessário
-para o seletor de subtrações (segue o padrão de `InstallmentSelector` mas com tipos `Deduction`).
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
-> Nenhuma violação de princípio.
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
