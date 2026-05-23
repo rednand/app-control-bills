@@ -74,5 +74,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-specs/006-align-table-columns/plan.md
+specs/001-pwa-install-notification/plan.md
 <!-- SPECKIT END -->

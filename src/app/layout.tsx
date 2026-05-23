@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import PwaInit from "@/components/PwaInit";
+import PwaInstallBanner from "@/components/PwaInstallBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Controle de Faturas",
   description: "Controle mensal de faturas e comprometimento de salário",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -30,6 +33,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <PwaInit />
+        <PwaInstallBanner />
       </body>
     </html>
   );
