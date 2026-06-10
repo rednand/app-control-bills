@@ -10,12 +10,13 @@ interface Props {
   institutions: Institution[];
   calculations: MonthCalc[];
   salaryConfigs: SalaryConfig[];
+  currentMonth?: number;
   onSalaryChange: (month: number, field: 'installment_1' | 'installment_2', value: number) => void;
   onInstallmentAssign: (institutionId: string, installment: PaymentInstallment | null) => void;
 }
 
 export default function SalarySection({
-  institutions, calculations, salaryConfigs,
+  institutions, calculations, salaryConfigs, currentMonth,
   onSalaryChange, onInstallmentAssign,
 }: Props) {
   const [activeSelector, setActiveSelector] = useState<1 | 2 | null>(null);
@@ -64,8 +65,11 @@ export default function SalarySection({
           <thead>
             <tr className="bg-slate-700 text-white">
               <th className="sticky left-0 z-20 bg-slate-700 w-[180px]" />
-              {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium w-[90px] border-b border-slate-600">
+              {MONTHS_SHORT.map((m, mi) => (
+                <th
+                  key={m}
+                  className={`px-3 py-3 text-center font-medium w-[90px] border-b border-slate-600${mi + 1 === currentMonth ? ' bg-blue-700 font-bold' : ''}`}
+                >
                   {m}
                 </th>
               ))}
@@ -110,17 +114,19 @@ export default function SalarySection({
                   </td>
                   {calculations.map((calc) => {
                     const raw = row.getValue(calc);
-                    if (raw === null) return <td key={calc.month} className={`px-2 py-2 border-b border-slate-100 ${borderTop} ${cellBg}`} />;
+                    const isCurrentMonth = calc.month === currentMonth;
+                    const currentMonthBg = isCurrentMonth ? ' bg-blue-50' : '';
+                    if (raw === null) return <td key={calc.month} className={`px-2 py-2 border-b border-slate-100 ${borderTop} ${cellBg}${currentMonthBg}`} />;
                     const colorClass = row.colorFn ? row.colorFn(raw) : 'text-slate-800';
                     if (row.isEditable && row.editField) {
                       return (
-                        <td key={calc.month} className={`px-2 py-1 border-b border-slate-100 ${cellBg}`}>
+                        <td key={calc.month} className={`px-2 py-1 border-b border-slate-100 ${cellBg}${currentMonthBg}`}>
                           <EditableCell value={raw} dimZero={false} onChange={(val) => onSalaryChange(calc.month, row.editField!, val)} className={`font-medium text-slate-800 ${colorClass}`} />
                         </td>
                       );
                     }
                     return (
-                      <td key={calc.month} className={`px-2 py-2 text-right border-b border-slate-100 ${borderTop} ${cellBg} ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
+                      <td key={calc.month} className={`px-2 py-2 text-right border-b border-slate-100 ${borderTop} ${cellBg}${currentMonthBg} ${colorClass} ${row.isBold ? 'font-semibold' : ''}`}>
                         {raw === 0 ? <span className="text-slate-300">—</span> : formatCurrency(raw)}
                       </td>
                     );

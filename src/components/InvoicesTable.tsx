@@ -9,6 +9,7 @@ interface Props {
   institutions: Institution[];
   invoices: MonthlyInvoice[];
   subtotals: number[];
+  currentMonth?: number;
   onInvoiceChange: (institutionId: string, month: number, value: number) => void;
   onAddInstitution: (name: string, dueDay: number, installment: 1 | 2) => void;
   onDeleteInstitution: (id: string) => void;
@@ -19,6 +20,7 @@ export default function InvoicesTable({
   institutions,
   invoices,
   subtotals,
+  currentMonth,
   onInvoiceChange,
   onAddInstitution,
   onDeleteInstitution,
@@ -52,8 +54,11 @@ export default function InvoicesTable({
               <th className="sticky left-0 z-20 bg-slate-800 text-left px-4 py-3 font-semibold w-[255px]">
                 CONTROLE DE FATURAS
               </th>
-              {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium w-[90px]">
+              {MONTHS_SHORT.map((m, mi) => (
+                <th
+                  key={m}
+                  className={`px-3 py-3 text-center font-medium w-[90px]${mi + 1 === currentMonth ? ' bg-blue-700 font-bold' : ''}`}
+                >
                   {m}
                 </th>
               ))}
@@ -111,7 +116,7 @@ export default function InvoicesTable({
                   </div>
                 </td>
                 {MONTHS_SHORT.map((_, mi) => (
-                  <td key={mi} className="px-2 py-1">
+                  <td key={mi} className={`px-2 py-1${mi + 1 === currentMonth ? ' bg-blue-50' : ''}`}>
                     <EditableCell
                       value={getAmount(inst.id, mi + 1)}
                       onChange={(val) => onInvoiceChange(inst.id, mi + 1, val)}
@@ -181,7 +186,7 @@ export default function InvoicesTable({
                 </div>
               </td>
               {subtotals.map((val, mi) => (
-                <td key={mi} className="px-2 py-2 text-right text-slate-700">
+                <td key={mi} className={`px-2 py-2 text-right text-slate-700${mi + 1 === currentMonth ? ' bg-blue-50' : ''}`}>
                   {formatCurrency(val)}
                 </td>
               ))}
