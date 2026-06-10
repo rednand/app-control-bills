@@ -11,6 +11,7 @@ interface Props {
   monthlyDeductions: MonthlyDeduction[];
   institutions: Institution[];
   totals: number[];
+  currentMonth?: number;
   onDeductionChange: (deductionId: string, month: number, value: number, note?: string) => void;
   onAddDeduction: (description: string) => void;
   onDeleteDeduction: (id: string) => void;
@@ -22,6 +23,7 @@ export default function DeductionsTable({
   monthlyDeductions,
   institutions,
   totals,
+  currentMonth,
   onDeductionChange,
   onAddDeduction,
   onDeleteDeduction,
@@ -64,8 +66,11 @@ export default function DeductionsTable({
               <th className="sticky left-0 z-20 bg-slate-600 text-left px-4 py-3 font-semibold w-[255px]">
                 SUBTRAÇÕES
               </th>
-              {MONTHS_SHORT.map((m) => (
-                <th key={m} className="px-3 py-3 text-center font-medium w-[90px]">
+              {MONTHS_SHORT.map((m, mi) => (
+                <th
+                  key={m}
+                  className={`px-3 py-3 text-center font-medium w-[90px]${mi + 1 === currentMonth ? ' bg-blue-700 font-bold' : ''}`}
+                >
                   {m}
                 </th>
               ))}
@@ -113,7 +118,7 @@ export default function DeductionsTable({
                 {MONTHS_SHORT.map((_, mi) => {
                   const entry = getEntry(ded.id, mi + 1);
                   return (
-                    <td key={mi} className="px-2 py-1">
+                    <td key={mi} className={`px-2 py-1${mi + 1 === currentMonth ? ' bg-blue-50' : ''}`}>
                       <div className="flex flex-col gap-0.5">
                         <EditableCell
                           value={entry?.amount ?? 0}
@@ -171,7 +176,7 @@ export default function DeductionsTable({
                 </div>
               </td>
               {totals.map((val, mi) => (
-                <td key={mi} className="px-2 py-2 text-right text-slate-700">
+                <td key={mi} className={`px-2 py-2 text-right text-slate-700${mi + 1 === currentMonth ? ' bg-blue-50' : ''}`}>
                   {formatCurrency(val)}
                 </td>
               ))}

@@ -6,7 +6,11 @@ import { Deduction, Institution, MonthCalc, MonthlyDeduction, MonthlyInvoice, Sa
 import InvoicesTable from './InvoicesTable';
 import DeductionsTable from './DeductionsTable';
 import SalarySection from './SalarySection';
+import MobileMonthView from './MobileMonthView';
 import LoginPage from './LoginPage';
+
+const CURRENT_YEAR = new Date().getFullYear();
+const CURRENT_MONTH = new Date().getMonth() + 1;
 
 export default function BillsApp() {
   const { data: session, status } = useSession();
@@ -257,28 +261,52 @@ export default function BillsApp() {
       </header>
 
       <main className="max-w-screen-2xl mx-auto px-2 sm:px-4 py-4 sm:py-6 flex flex-col gap-4 sm:gap-6">
-        <InvoicesTable
-          institutions={institutions} invoices={invoices}
-          subtotals={calculations.map((c) => c.subtotalFatura)}
-          onInvoiceChange={handleInvoiceChange}
-          onAddInstitution={handleAddInstitution}
-          onDeleteInstitution={handleDeleteInstitution}
-          onAbbreviationChange={handleAbbreviationChange}
-        />
-        <DeductionsTable
-          deductions={deductions} monthlyDeductions={monthlyDeductions}
-          institutions={institutions}
-          totals={calculations.map((c) => c.totalSubtracoes)}
-          onDeductionChange={handleDeductionChange}
-          onAddDeduction={handleAddDeduction}
-          onDeleteDeduction={handleDeleteDeduction}
-          onDeductionInstitutionAssign={handleDeductionInstitutionAssign}
-        />
-        <SalarySection
-          institutions={institutions} calculations={calculations}
-          salaryConfigs={salaryConfigs} onSalaryChange={handleSalaryChange}
-          onInstallmentAssign={handleInstallmentAssign}
-        />
+        <div className="hidden md:flex flex-col gap-4 sm:gap-6">
+          <InvoicesTable
+            institutions={institutions} invoices={invoices}
+            subtotals={calculations.map((c) => c.subtotalFatura)}
+            currentMonth={year === CURRENT_YEAR ? CURRENT_MONTH : undefined}
+            onInvoiceChange={handleInvoiceChange}
+            onAddInstitution={handleAddInstitution}
+            onDeleteInstitution={handleDeleteInstitution}
+            onAbbreviationChange={handleAbbreviationChange}
+          />
+          <DeductionsTable
+            deductions={deductions} monthlyDeductions={monthlyDeductions}
+            institutions={institutions}
+            totals={calculations.map((c) => c.totalSubtracoes)}
+            currentMonth={year === CURRENT_YEAR ? CURRENT_MONTH : undefined}
+            onDeductionChange={handleDeductionChange}
+            onAddDeduction={handleAddDeduction}
+            onDeleteDeduction={handleDeleteDeduction}
+            onDeductionInstitutionAssign={handleDeductionInstitutionAssign}
+          />
+          <SalarySection
+            institutions={institutions} calculations={calculations}
+            salaryConfigs={salaryConfigs} onSalaryChange={handleSalaryChange}
+            currentMonth={year === CURRENT_YEAR ? CURRENT_MONTH : undefined}
+            onInstallmentAssign={handleInstallmentAssign}
+          />
+        </div>
+        <div className="md:hidden">
+          <MobileMonthView
+            year={year}
+            institutions={institutions}
+            invoices={invoices}
+            deductions={deductions}
+            monthlyDeductions={monthlyDeductions}
+            salaryConfigs={salaryConfigs}
+            calculations={calculations}
+            onInvoiceChange={handleInvoiceChange}
+            onDeductionChange={handleDeductionChange}
+            onSalaryChange={handleSalaryChange}
+            onAddInstitution={handleAddInstitution}
+            onDeleteInstitution={handleDeleteInstitution}
+            onAddDeduction={handleAddDeduction}
+            onDeleteDeduction={handleDeleteDeduction}
+            onDeductionInstitutionAssign={handleDeductionInstitutionAssign}
+          />
+        </div>
       </main>
     </div>
   );
