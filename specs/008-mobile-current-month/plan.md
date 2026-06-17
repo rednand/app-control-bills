@@ -1,212 +1,106 @@
 # Implementation Plan: Experiência Mobile Focada no Mês
 
-**Branch**: `008-mobile-current-month` | **Date**: 2026-06-10 | **Spec**: specs/008-mobile-current-month/spec.md
+**Branch**: `008-mobile-current-month` | **Date**: 2026-06-17 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `specs/008-mobile-current-month/spec.md`
+**Input**: Feature specification from `/specs/008-mobile-current-month/spec.md`
 
 ## Summary
 
-Adicionar dois recursos ao `MobileMonthView` já implementado: (1) restaurar o vínculo subtração→fatura via `InstitutionPicker` reutilizado (regressão), e (2) adicionar toggle de expansão por subtração que exibe e permite editar valores para todos os 12 meses inline.
+O `MobileMonthView` está faltando as linhas "Subtrai das faturas parcela 1/2" com o `InstallmentSelector` na seção SALÁRIO — funcionalidade presente no `SalarySection` desktop que permite ao usuário configurar quais instituições pertencem a cada parcela. A prop `onInstallmentAssign` não é passada de `BillsApp` para `MobileMonthView` e o componente não importa nem renderiza `InstallmentSelector`. Fix: adicionar prop, import, dois estados e duas linhas interativas na seção SALÁRIO do mobile.
 
 ## Technical Context
 
-**Language/Version**: TypeScript / Next.js 15 App Router, React 19
+**Language/Version**: TypeScript 5 / Next.js 15 App Router / React 19
 
-**Primary Dependencies**: Tailwind CSS, `InstitutionPicker` (componente existente com `createPortal`)
+**Primary Dependencies**: Tailwind CSS, Supabase
 
-**Storage**: N/A — feature exclusivamente de apresentação; mutações via callbacks existentes
+**Storage**: Supabase (PostgreSQL)
 
-**Testing**: `npm run lint` + `npx tsc --noEmit` + validação manual (quickstart.md)
+**Testing**: lint + `npx tsc --noEmit` + validação manual no browser
 
-**Target Platform**: Mobile (< 768px) via Tailwind `md:hidden`
+**Target Platform**: Web (mobile viewport 375–430px, desktop ≥ 768px)
 
-**Project Type**: web-app single-page (Next.js)
+**Project Type**: web-app (single-page, client component)
 
-**Performance Goals**: Zero re-renders adicionais no desktop; expand/collapse < 16ms (state local)
+**Performance Goals**: N/A — purely presentation change, no new data fetching
 
-**Constraints**: Viewport mínimo 375px; zero novas dependências; zero modificações em InstitutionPicker
+**Constraints**: nenhuma mudança de schema; sem novas dependências; `InstallmentSelector` já usa `createPortal` → funciona em mobile sem modificação
 
-**Scale/Scope**: 2 arquivos modificados (MobileMonthView.tsx, BillsApp.tsx)
+**Scale/Scope**: 2 arquivos modificados, ~20 linhas de código adicionadas
 
 ## Constitution Check
 
-| Princípio | Gate | Status |
-|-----------|------|--------|
-| I. Calculation Integrity | `MonthCalc[]` calculado em BillsApp; MobileMonthView é view pura | PASS |
-| II. Optimistic UI | Mutações via callbacks existentes (onDeductionChange, onDeductionInstitutionAssign) | PASS |
-| III. Single-User Simplicity | Nenhuma mudança de auth/routing | PASS |
-| IV. Data Integrity | Nenhuma nova coleção; upsert já existe | PASS |
-| V. No Dead Code | InstitutionPicker reutilizado; zero duplicação | PASS |
-| VI. Responsividade | Feature é exclusivamente mobile (< 768px) | PASS |
+| Principle | Gate Question | Status |
+|-----------|---------------|--------|
+| I. Calculation Integrity | Derived values via `useMemo` em BillsApp; MobileMonthView recebe `calculations` prontos | ✅ |
+| II. Optimistic UI | Nenhuma mutação nova — `onInstallmentAssign` já existe e é otimista | ✅ |
+| III. Single-User Simplicity | Sem autenticação, sem rota nova | ✅ |
+| IV. Data Integrity | Nenhuma escrita nova; upsert existente em `handleInstallmentAssign` inalterado | ✅ |
+| V. No Dead Code | Reutiliza `InstallmentSelector` e `getSubtraiLabel` existentes; sem duplicação | ✅ |
+| VI. Responsividade | Fix é exclusivamente para o viewport mobile; desktop intocado | ✅ |
 
 ## Project Structure
 
-### Source Code
+### Documentation (this feature)
+
+```text
+specs/008-mobile-current-month/
+├── plan.md              ← este arquivo
+├── research.md          ← decisões de design (existente + contexto novo)
+├── spec.md              ← especificação de feature
+├── quickstart.md        ← guia de validação manual
+└── tasks.md             ← lista de tasks (fases 2–8 existentes + nova fase 9)
+```
+
+### Source Code (arquivos modificados por este fix)
 
 ```text
 src/components/
-├── MobileMonthView.tsx    ← MODIFY: add onDeductionInstitutionAssign prop,
-│                              InstitutionPicker integration, expand-in-place
-└── BillsApp.tsx           ← MODIFY: pass onDeductionInstitutionAssign to MobileMonthView
+├── MobileMonthView.tsx   ← prop onInstallmentAssign + import InstallmentSelector
+│                           + estado activeInstSelector/instSelectorAnchor
+│                           + 2 linhas interativas na seção SALÁRIO
+└── BillsApp.tsx          ← passar onInstallmentAssign={handleInstallmentAssign}
+                            ao MobileMonthView
 ```
 
-Nenhum arquivo novo. Nenhuma mudança em InstitutionPicker, DeductionsTable, ou qualquer outro componente.
+## Complexity Tracking
 
-## MobileMonthView — Props Interface (atualizada)
+> Nenhuma violação de constituição.
 
-```typescript
-interface Props {
-  year: number;
-  institutions: Institution[];
-  invoices: MonthlyInvoice[];
-  deductions: Deduction[];
-  monthlyDeductions: MonthlyDeduction[];
-  salaryConfigs: SalaryConfig[];
-  calculations: MonthCalc[];
-  onInvoiceChange: (institutionId: string, month: number, value: number) => void;
-  onDeductionChange: (deductionId: string, month: number, value: number, note?: string) => void;
-  onSalaryChange: (month: number, field: 'installment_1' | 'installment_2', value: number) => void;
-  onAddInstitution: (name: string, dueDay: number, installment: 1 | 2) => void;
-  onDeleteInstitution: (id: string) => void;
-  onAddDeduction: (description: string) => void;
-  onDeleteDeduction: (id: string) => void;
-  onDeductionInstitutionAssign: (deductionId: string, institutionId: string | null) => void;  // ← NEW
-}
+---
+
+## Phase 9: Fix — InstallmentSelector no Mobile (novo)
+
+**Problema identificado em**: 2026-06-17
+
+**Descrição**: A seção SALÁRIO do `MobileMonthView` mostra apenas Parcela 1, Parcela 2 e TOTAL. Faltam as duas linhas interativas presentes no desktop `SalarySection`:
+- "Subtrai das faturas parcela 1" → exibe `calc.inst1Total` → abre `InstallmentSelector` para slot 1
+- "Subtrai das faturas parcela 2" → exibe `calc.inst2Total` → abre `InstallmentSelector` para slot 2
+
+Sem essas linhas, o usuário não consegue configurar quais instituições descontam de cada parcela de salário no mobile.
+
+**Causa raiz**:
+1. `MobileMonthView` Props não tem `onInstallmentAssign`
+2. `BillsApp` não passa `onInstallmentAssign` para `MobileMonthView`
+3. `InstallmentSelector` não é importado em `MobileMonthView`
+4. A seção SALÁRIO não renderiza as linhas de `inst1Total`/`inst2Total`
+
+### Tasks
+
+- [ ] T026 Adicionar `onInstallmentAssign: (institutionId: string, installment: PaymentInstallment | null) => void` à interface `Props` de `src/components/MobileMonthView.tsx`; adicionar `PaymentInstallment` ao import de `@/lib/types`; adicionar no destructuring e nos parâmetros da função
+- [ ] T027 Em `src/components/MobileMonthView.tsx`: importar `InstallmentSelector` de `./InstallmentSelector`; importar `getSubtraiLabel` de `@/lib/utils`; adicionar estados `const [activeInstSelector, setActiveInstSelector] = useState<1 | 2 | null>(null)` e `const [instSelectorAnchor, setInstSelectorAnchor] = useState<DOMRect | null>(null)`
+- [ ] T028 Em `src/components/MobileMonthView.tsx`, na seção SALÁRIO, adicionar após a linha "Parcela 1 (dia 15)":
+  - Linha "Subtrai parcela 1": botão que mostra `getSubtraiLabel(1, institutions)`, ao clicar captura `anchorRect` e abre `InstallmentSelector` para installment=1; exibe `formatCurrency(calc?.inst1Total ?? 0)` em `text-red-600` (se > 0) ou `text-slate-400`
+  - Linha "Saldo Período 15": read-only com `balanceColor(calc?.saldoPeriodo15 ?? 0)` e `formatCurrency`
+  - Após a linha "Parcela 2 (dia 30)", adicionar equivalentes para installment=2 e `inst2Total`/`saldoPeriodo30`
+- [ ] T029 Em `src/components/BillsApp.tsx`, adicionar `onInstallmentAssign={handleInstallmentAssign}` ao `<MobileMonthView>` (linha ~307)
+- [ ] T030 Executar `npm run lint` e `npx tsc --noEmit` — zero erros
+- [ ] T031 Validação manual: no mobile (390px), abrir seção SALÁRIO. Verificar que "Subtrai parcela 1" aparece com o label das instituições configuradas. Tocar → InstallmentSelector abre. Checkbox de instituição → marca. Fechar → `inst1Total` atualiza e `Saldo Período 15` recalcula imediatamente.
+
+### Sequência de execução
+
+```
+T026 → T027 → T028 → T029 → T030 → T031
 ```
 
-## Estado interno adicional
-
-```typescript
-// US4 — InstitutionPicker
-const [activePicker, setActivePicker] = useState<string | null>(null);
-const [pickerAnchor, setPickerAnchor] = useState<DOMRect | null>(null);
-
-// US5 — expand por subtração
-const [expandedDedId, setExpandedDedId] = useState<string | null>(null);
-```
-
-## Wireframe: seção Subtrações atualizada
-
-```text
-┌─────────────────────────────────────────────┐
-│ SUBTRAÇÕES                                  │  ← bg-slate-600
-├─────────────────────────────────────────────┤
-│ [✕] Airbnb                    [▼] R$1.500  │  ← linha principal
-│      + vincular fatura                      │  ← link button (US4)
-├─────────────────────────────────────────────┤
-│ [✕] Parte Samuel              [▼] R$1.000  │
-│      Nubank (abrev/nome)                    │  ← institution linked (US4)
-│  ┌──────────────────────────────────────┐   │
-│  │ Jan  [R$1.000]   Jul  [—       ]     │   │  ← expanded (US5)
-│  │ Fev  [R$1.000]   Ago  [—       ]     │   │
-│  │ Mar  [R$1.000]   Set  [—       ]     │   │
-│  │ Abr  [R$1.000]   Out  [—       ]     │   │  bg-blue-50 no mês selecionado
-│  │ Mai  [R$1.000]   Nov  [—       ]     │   │
-│  │ Jun  [R$1.000]   Dez  [—       ]     │   │
-│  └──────────────────────────────────────┘   │
-├─────────────────────────────────────────────┤
-│ TOTAL SUBTRAÇÕES    [+ Adicionar]  R$2.500  │
-└─────────────────────────────────────────────┘
-```
-
-## Padrão de implementação — US4 (Institution Picker)
-
-Dentro do map de `deductions` em MobileMonthView:
-
-```tsx
-// Imports: adicionar InstitutionPicker
-import InstitutionPicker from './InstitutionPicker';
-
-// State:
-const [activePicker, setActivePicker] = useState<string | null>(null);
-const [pickerAnchor, setPickerAnchor] = useState<DOMRect | null>(null);
-
-// Helper:
-const getInstitutionName = (institutionId: string | null) => {
-  if (!institutionId) return null;
-  return institutions.find((i) => i.id === institutionId)?.abbreviation?.trim() ||
-    institutions.find((i) => i.id === institutionId)?.name || null;
-};
-
-// Por subtração:
-<button
-  onClick={(e) => {
-    const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
-    setPickerAnchor(rect);
-    setActivePicker(activePicker === ded.id ? null : ded.id);
-  }}
-  className={ded.institution_id
-    ? 'text-[11px] text-slate-400 hover:text-slate-600 text-left'
-    : 'text-[11px] text-slate-300 hover:text-slate-500 text-left'
-  }
->
-  {getInstitutionName(ded.institution_id) ?? '+ vincular fatura'}
-</button>
-{activePicker === ded.id && pickerAnchor && (
-  <InstitutionPicker
-    institutions={institutions}
-    currentId={ded.institution_id}
-    onSelect={(id) => { onDeductionInstitutionAssign(ded.id, id); setActivePicker(null); }}
-    onClose={() => setActivePicker(null)}
-    anchorRect={pickerAnchor}
-  />
-)}
-```
-
-## Padrão de implementação — US5 (Expand multi-mês)
-
-```tsx
-// State:
-const [expandedDedId, setExpandedDedId] = useState<string | null>(null);
-
-// Botão toggle na linha principal:
-<button
-  onClick={() => setExpandedDedId(expandedDedId === ded.id ? null : ded.id)}
-  className="text-slate-400 hover:text-slate-600 text-xs px-1"
->
-  {expandedDedId === ded.id ? '▲' : '▼'}
-</button>
-
-// Grade expandida (após a linha principal da subtração):
-{expandedDedId === ded.id && (
-  <div className="bg-slate-50 border-t border-slate-100 px-4 py-2">
-    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-      {MONTHS_SHORT.map((label, mi) => {
-        const m = mi + 1;
-        const entry = monthlyDeductions.find(d => d.deduction_id === ded.id && d.month === m);
-        const isSelected = m === selectedMonth;
-        return (
-          <div
-            key={m}
-            className={`flex items-center justify-between gap-2 py-1 px-2 rounded ${isSelected ? 'bg-blue-50' : ''}`}
-          >
-            <span className={`text-xs font-medium w-6 ${isSelected ? 'text-blue-700' : 'text-slate-500'}`}>
-              {label}
-            </span>
-            <EditableCell
-              value={entry?.amount ?? 0}
-              onChange={(val) => onDeductionChange(ded.id, m, val)}
-              className="text-xs text-right"
-            />
-          </div>
-        );
-      })}
-    </div>
-  </div>
-)}
-```
-
-## BillsApp.tsx — prop adicional para MobileMonthView
-
-```tsx
-<MobileMonthView
-  ...props existentes...
-  onDeductionInstitutionAssign={handleDeductionInstitutionAssign}
-/>
-```
-
-`handleDeductionInstitutionAssign` já existe em BillsApp — basta passar como prop.
-
-## Complexidade
-
-Nenhuma violação de constituição. Nenhum padrão novo introduzido — apenas reutilização de `InstitutionPicker` e `EditableCell` já existentes.
+T026 e T027 modificam o mesmo arquivo e são sequenciais; T029 (BillsApp) pode rodar em paralelo com T028.

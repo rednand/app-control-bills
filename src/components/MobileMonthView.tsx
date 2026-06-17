@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Deduction, Institution, MonthCalc, MonthlyDeduction, MonthlyInvoice, SalaryConfig } from '@/lib/types';
-import { MONTHS_SHORT, formatCurrency, formatPercent, balanceColor, percentColor } from '@/lib/utils';
+import { Deduction, Institution, MonthCalc, MonthlyDeduction, MonthlyInvoice, PaymentInstallment, SalaryConfig } from '@/lib/types';
+import { MONTHS_SHORT, formatCurrency, formatPercent, balanceColor, percentColor, getSubtraiLabel } from '@/lib/utils';
 import EditableCell from './EditableCell';
 import InstitutionPicker from './InstitutionPicker';
+import InstallmentSelector from './InstallmentSelector';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const CURRENT_MONTH = new Date().getMonth() + 1;
@@ -25,6 +26,7 @@ interface Props {
   onAddDeduction: (description: string) => void;
   onDeleteDeduction: (id: string) => void;
   onDeductionInstitutionAssign: (deductionId: string, institutionId: string | null) => void;
+  onInstallmentAssign: (institutionId: string, installment: PaymentInstallment | null) => void;
 }
 
 export default function MobileMonthView({
@@ -32,7 +34,7 @@ export default function MobileMonthView({
   salaryConfigs, calculations,
   onInvoiceChange, onDeductionChange, onSalaryChange,
   onAddInstitution, onDeleteInstitution, onAddDeduction, onDeleteDeduction,
-  onDeductionInstitutionAssign,
+  onDeductionInstitutionAssign, onInstallmentAssign,
 }: Props) {
   const [monthOverride, setMonthOverride] = useState<{ year: number; month: number } | null>(null);
   const selectedMonth = monthOverride?.year === year
@@ -52,6 +54,8 @@ export default function MobileMonthView({
   const [activePicker, setActivePicker] = useState<string | null>(null);
   const [pickerAnchor, setPickerAnchor] = useState<DOMRect | null>(null);
   const [expandedDedId, setExpandedDedId] = useState<string | null>(null);
+  const [activeInstSelector, setActiveInstSelector] = useState<1 | 2 | null>(null);
+  const [instSelectorAnchor, setInstSelectorAnchor] = useState<DOMRect | null>(null);
 
   const calc = calculations.find((c) => c.month === selectedMonth);
 
@@ -336,6 +340,38 @@ export default function MobileMonthView({
             />
           </div>
           <div className="flex items-center justify-between px-4 py-3 gap-3">
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                  setInstSelectorAnchor(rect);
+                  setActiveInstSelector(activeInstSelector === 1 ? null : 1);
+                }}
+                className="text-left text-sm text-slate-500 hover:text-slate-800 hover:underline decoration-dashed underline-offset-2"
+              >
+                {getSubtraiLabel(1, institutions)}
+              </button>
+              {activeInstSelector === 1 && instSelectorAnchor && (
+                <InstallmentSelector
+                  installment={1}
+                  institutions={institutions}
+                  onAssign={(id, inst) => { onInstallmentAssign(id, inst); setActiveInstSelector(null); }}
+                  onClose={() => setActiveInstSelector(null)}
+                  anchorRect={instSelectorAnchor}
+                />
+              )}
+            </div>
+            <span className={`text-sm ${(calc?.inst1Total ?? 0) < 0 ? 'text-red-600' : 'text-slate-700'}`}>
+              {(calc?.inst1Total ?? 0) === 0 ? <span className="text-slate-300">—</span> : formatCurrency(calc?.inst1Total ?? 0)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-t border-slate-200">
+            <span className="text-sm font-semibold text-slate-700">Saldo Período 15</span>
+            <span className={`text-sm font-semibold ${balanceColor(calc?.saldoPeriodo15 ?? 0)}`}>
+              {(calc?.saldoPeriodo15 ?? 0) === 0 ? <span className="text-slate-300">—</span> : formatCurrency(calc?.saldoPeriodo15 ?? 0)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 gap-3">
             <span className="text-sm text-slate-600">Parcela 2 (dia 30)</span>
             <EditableCell
               value={getSalary('installment_2')}
@@ -344,8 +380,40 @@ export default function MobileMonthView({
               className="text-sm text-right"
             />
           </div>
+          <div className="flex items-center justify-between px-4 py-3 gap-3">
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                  setInstSelectorAnchor(rect);
+                  setActiveInstSelector(activeInstSelector === 2 ? null : 2);
+                }}
+                className="text-left text-sm text-slate-500 hover:text-slate-800 hover:underline decoration-dashed underline-offset-2"
+              >
+                {getSubtraiLabel(2, institutions)}
+              </button>
+              {activeInstSelector === 2 && instSelectorAnchor && (
+                <InstallmentSelector
+                  installment={2}
+                  institutions={institutions}
+                  onAssign={(id, inst) => { onInstallmentAssign(id, inst); setActiveInstSelector(null); }}
+                  onClose={() => setActiveInstSelector(null)}
+                  anchorRect={instSelectorAnchor}
+                />
+              )}
+            </div>
+            <span className={`text-sm ${(calc?.inst2Total ?? 0) < 0 ? 'text-red-600' : 'text-slate-700'}`}>
+              {(calc?.inst2Total ?? 0) === 0 ? <span className="text-slate-300">—</span> : formatCurrency(calc?.inst2Total ?? 0)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-t border-slate-200">
+            <span className="text-sm font-semibold text-slate-700">Saldo Período 30</span>
+            <span className={`text-sm font-semibold ${balanceColor(calc?.saldoPeriodo30 ?? 0)}`}>
+              {(calc?.saldoPeriodo30 ?? 0) === 0 ? <span className="text-slate-300">—</span> : formatCurrency(calc?.saldoPeriodo30 ?? 0)}
+            </span>
+          </div>
           <div className="flex items-center justify-between px-4 py-3 bg-slate-100 border-t-2 border-slate-300">
-            <span className="text-sm font-semibold text-slate-700">TOTAL</span>
+            <span className="text-sm font-semibold text-slate-700">TOTAL SALÁRIO</span>
             <span className="text-sm font-semibold text-slate-700">
               {formatCurrency(calc?.salarioTotal ?? 0)}
             </span>

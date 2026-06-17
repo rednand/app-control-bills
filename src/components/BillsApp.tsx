@@ -305,6 +305,7 @@ export default function BillsApp() {
             onAddDeduction={handleAddDeduction}
             onDeleteDeduction={handleDeleteDeduction}
             onDeductionInstitutionAssign={handleDeductionInstitutionAssign}
+            onInstallmentAssign={handleInstallmentAssign}
           />
         </div>
       </main>
