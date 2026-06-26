@@ -440,7 +440,7 @@ export default function MobileMonthView({
           </div>
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-sm text-slate-300">Total Fatura Líquida</span>
-            <span className={`text-sm font-medium ${(calc?.totalFaturaLiquida ?? 0) > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+            <span className={`text-sm font-medium ${(calc?.totalFaturaLiquida ?? 0) < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
               {calc?.totalFaturaLiquida === 0 ? <span className="text-slate-600">—</span> : formatCurrency(calc?.totalFaturaLiquida ?? 0)}
             </span>
           </div>

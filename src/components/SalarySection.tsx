@@ -35,10 +35,10 @@ export default function SalarySection({
     installmentSlot?: 1 | 2;
   }> = [
     { label: 'Salário Parcela 1 (dia 15)', getValue: (c) => getSalary(c.month, 'installment_1'), isEditable: true, editField: 'installment_1' },
-    { label: () => getSubtraiLabel(1, institutions), getValue: (c) => c.inst1Total, colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800', installmentSlot: 1 },
+    { label: () => getSubtraiLabel(1, institutions), getValue: (c) => c.inst1Total, colorFn: (v) => v < 0 ? 'text-red-600' : 'text-slate-800', installmentSlot: 1 },
     { label: 'Saldo Período 15', getValue: (c) => c.saldoPeriodo15, colorFn: balanceColor, isBold: true },
     { label: 'Salário Parcela 2 (dia 30)', getValue: (c) => getSalary(c.month, 'installment_2'), isEditable: true, editField: 'installment_2' },
-    { label: () => getSubtraiLabel(2, institutions), getValue: (c) => c.inst2Total, colorFn: (v) => v > 0 ? 'text-red-600' : 'text-slate-800', installmentSlot: 2 },
+    { label: () => getSubtraiLabel(2, institutions), getValue: (c) => c.inst2Total, colorFn: (v) => v < 0 ? 'text-red-600' : 'text-slate-800', installmentSlot: 2 },
     { label: 'Saldo Período 30', getValue: (c) => c.saldoPeriodo30, colorFn: balanceColor, isBold: true },
     { label: 'SALÁRIO TOTAL', getValue: (c) => c.salarioTotal, isBold: true },
   ];
@@ -50,7 +50,7 @@ export default function SalarySection({
     colorFn?: (val: number) => string;
     isPercent?: boolean;
   }> = [
-    { label: 'Total Fatura Líquida', getValue: (c) => c.totalFaturaLiquida, colorFn: (v) => v > 0 ? 'text-rose-400' : 'text-slate-400' },
+    { label: 'Total Fatura Líquida', getValue: (c) => c.totalFaturaLiquida, colorFn: (v) => v < 0 ? 'text-rose-400' : 'text-slate-400' },
     { label: 'Saldo Restante', getValue: (c) => c.saldoRestante, colorFn: (v) => v < 0 ? 'text-red-400' : v > 0 ? 'text-emerald-400' : 'text-slate-500', isBold: true },
     { label: '% Comprometido', getValue: (c) => c.percentComprometido, isPercent: true, colorFn: percentColor, isBold: true },
   ];
