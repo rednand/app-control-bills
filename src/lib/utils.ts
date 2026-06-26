@@ -23,7 +23,7 @@ export function parseInput(value: string): number {
 
 export function percentColor(ratio: number): string {
   if (ratio <= 0) return 'text-slate-800';
-  if (ratio >= 0.7) return 'text-red-600 font-bold';
+  if (ratio > 1) return 'text-red-600 font-bold';
   if (ratio >= 0.4) return 'text-amber-600 font-semibold';
   return 'text-emerald-600 font-semibold';
 }

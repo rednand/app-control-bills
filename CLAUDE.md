@@ -74,5 +74,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-specs/008-mobile-current-month/plan.md
+specs/009-negative-only-red/plan.md
 <!-- SPECKIT END -->
